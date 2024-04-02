@@ -1,8 +1,8 @@
-# include_directories(
-#     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/
-#     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/util
-#     ${CMAKE_SOURCE_DIR}/../ref/include/
-# )
+include_directories(
+    ${CMAKE_SOURCE_DIR}/include/
+    ${CMAKE_SOURCE_DIR}/include/util
+    ${CMAKE_SOURCE_DIR}/../ref/include/
+)
 aux_source_directory(. CUCAMASIM_DIR)
 add_subdirectory(./util)
 
