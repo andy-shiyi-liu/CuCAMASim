@@ -17,7 +17,7 @@ ArchConfig::ArchConfig(YAML::Node archConfig)
       subarrays_per_array(archConfig["SubarraysPerArray"].as<unsigned>()){};
 
 void ArchConfig::print() {
-  std::cout << "Arch Configs: " << std::endl;
+  std::cout << "Arch Config: " << std::endl;
   std::cout << "- arrays_per_mat: " << arrays_per_mat << std::endl;
   std::cout << "- mats_per_bank: " << mats_per_bank << std::endl;
   std::cout << "- subarrays_per_array: " << subarrays_per_array << std::endl;
@@ -30,11 +30,10 @@ ArrayConfig::ArrayConfig(YAML::Node arrayConfig)
       row(arrayConfig["row"].as<uint32_t>()),
       sensing(arrayConfig["sensing"].as<std::string>()),
       sensingLimit(arrayConfig["sensingLimit"].as<double>()),
-      useEVACAMCost(arrayConfig["useEVACAMCost"].as<bool>())
-      {};
+      useEVACAMCost(arrayConfig["useEVACAMCost"].as<bool>()){};
 
 void ArrayConfig::print() {
-  std::cout << "Arch Configs: " << std::endl;
+  std::cout << "Arch Config: " << std::endl;
   std::cout << "- bit: " << bit << std::endl;
   std::cout << "- cell: " << cell << std::endl;
   std::cout << "- col: " << col << std::endl;
@@ -42,6 +41,27 @@ void ArrayConfig::print() {
   std::cout << "- sensing: " << sensing << std::endl;
   std::cout << "- sensingLimit: " << sensingLimit << std::endl;
   std::cout << "- useEVACAMCost: " << useEVACAMCost << std::endl;
+}
+
+QueryConfig::QueryConfig(YAML::Node queryConfig)
+    : funcSim(queryConfig["FuncSim"].as<bool>()),
+     perfEval(queryConfig["PerfEval"].as<bool>()),
+     bit(queryConfig["bit"].as<uint16_t>()),
+     distanceParameter(queryConfig["distanceParameter"].as<double>()),
+     parameter(queryConfig["parameter"].as<double>()),
+     distance(queryConfig["distance"].as<std::string>()),
+     searchScheme(queryConfig["searchScheme"].as<std::string>())
+    {};
+
+void QueryConfig::print() {
+  std::cout << "Query Config: " << std::endl;
+  std::cout << "- funcSim: " << funcSim << std::endl;
+  std::cout << "- perfEval: " << perfEval << std::endl;
+  std::cout << "- bit: " << bit << std::endl;
+  std::cout << "- distanceParameter: " << distanceParameter << std::endl;
+  std::cout << "- parameter: " << parameter << std::endl;
+  std::cout << "- distance: " << distance << std::endl;
+  std::cout << "- searchScheme: " << searchScheme << std::endl;
 }
 
 CamConfig::CamConfig(std::string configPath) {
@@ -52,5 +72,7 @@ CamConfig::CamConfig(std::string configPath) {
   archConfig->print();
   arrayConfig = new ArrayConfig(camConfig["array"]);
   arrayConfig->print();
+  queryConfig = new QueryConfig(camConfig["query"]);
+  queryConfig->print();
   std::cout << "config read successful!" << std::endl;
 }
