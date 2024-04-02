@@ -1,5 +1,11 @@
 #include <iostream>
+#include "CuCAMASim.h"
 
-int main(int, char**){
-    std::cout << "Hello, from CuCAMASim!\n";
+using namespace std;
+
+
+int main(){
+    cout << "hello world!" << endl;
+    CuCAMASim camasim;
+    return 0;
 }

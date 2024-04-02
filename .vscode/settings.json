@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "/workspaces/CuCAMASim"
+    "cmake.sourceDirectory": "/workspaces/CuCAMASim",
+    "files.associations": {
+        "ostream": "cpp",
+        "iostream": "cpp"
+    }
 }

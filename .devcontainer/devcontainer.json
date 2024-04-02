@@ -1,6 +1,9 @@
 {
     "name": "CUDA Dev Container",
-    "image": "nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04",
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile"
+    },
     "runArgs": [
         "--gpus", "all"
     ],
@@ -15,5 +18,10 @@
                 "ms-vscode.cpptools"
             ]
         }
-    }
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+    ],
+    "forwardPorts": [],
+    "remoteUser": "root"
 }
