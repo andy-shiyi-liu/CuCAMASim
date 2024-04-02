@@ -3,5 +3,5 @@
 #include <iostream>
 
 camConfig::camConfig(std::string configPath) {
-  std::cout << configPath << std::endl;
+  std::cout << "Using config: " << configPath << std::endl;
 }

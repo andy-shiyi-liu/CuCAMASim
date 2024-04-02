@@ -9,6 +9,9 @@ set(CMAKE_CUDA_STANDARD 11)
 # Set C++ standard to C++17 or later for std::filesystem support
 set(CMAKE_CXX_STANDARD 17)
 
+# Define the flag
+add_definitions(-D__MAIN__)
+
 # Include header files from specific directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/

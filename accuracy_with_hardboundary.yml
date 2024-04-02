@@ -1,0 +1,53 @@
+arch:
+  ArraysPerMat: 4
+  MatsPerBank: 4
+  SubarraysPerArray: 4
+array:
+  bit: 3
+  cell: ACAM
+  col: 128
+  row: 128
+  sensing: exact
+  sensingLimit: 0
+  useEVACAMCost: false
+cell:
+  design: 6T2M
+  device: RRAM
+  maxConductance: 150
+  minConductance: 0
+  representation: voltage
+  type: ACAM
+  writeNoise:
+    cellDesign: 6T2M
+    device: RRAM
+    hasWriteNoise: true
+    maxConductance: 150
+    minConductance: 0
+    noiseType:
+    - variation
+    variation:
+      stdDev: 20.0
+      bound: 30.0
+      type: bounded_gaussian
+query:
+  FuncSim: true
+  PerfEval: true
+  bit: 3
+  distance: range
+  distanceParameter: 1000
+  parameter: 30
+  searchScheme: exact
+mapping:
+  strategy:
+    # - combineSameClass
+    # - expandToSame
+    # - longBoundaryPartition
+    # - expandToSame
+    - expandAll
+  expandAll:
+    strategy: "n sigma"
+    sigma: 1
+    nSigma: 1
+  # longBoundaryPartition:
+  #   boundaryPartitionThreshold: 0.2
+  #   partitionLength: 0.2
