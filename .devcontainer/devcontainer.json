@@ -1,0 +1,19 @@
+{
+    "name": "CUDA Dev Container",
+    "image": "nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04",
+    "runArgs": [
+        "--gpus", "all"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.gpuAcceleration": "on"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cpptools"
+            ]
+        }
+    }
+}
