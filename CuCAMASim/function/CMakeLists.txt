@@ -1,4 +1,8 @@
+find_package(CUDAToolkit)
 aux_source_directory(. FUNCTION_DIR)
+set(CMAKE_CUDA_STANDARD 17)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 
 include(FetchContent)
 # yaml package
@@ -17,8 +21,17 @@ endif()
 
 add_library(lib_function ${FUNCTION_DIR})
 
+# Adjusting CUDA flags
+set_target_properties(lib_function PROPERTIES CUDA_ARCHITECTURES 61)
+add_subdirectory(./cuda)
+
 # Linking libraries
-target_link_libraries(lib_function PUBLIC yaml-cpp::yaml-cpp)
+target_link_libraries(lib_function PRIVATE CUDA::cudart)
+target_link_libraries(lib_function PUBLIC yaml-cpp::yaml-cpp lib_function_cuda)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(lib_function PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-G>)
+endif()
+set_target_properties(lib_function PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Treat warnings as errors for C and C++ files
 if(MSVC)
