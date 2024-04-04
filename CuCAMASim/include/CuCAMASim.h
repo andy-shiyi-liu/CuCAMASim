@@ -5,7 +5,9 @@
 #include "util/config.h"
 
 class CuCAMASim{
+    private:
+    const CamConfig *config;
     public:
-    CuCAMASim();
+    CuCAMASim(CamConfig *camConfig);
 };
 #endif

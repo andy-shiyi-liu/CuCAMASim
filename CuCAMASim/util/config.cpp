@@ -1,4 +1,4 @@
-#include "config.h"
+#include "util/config.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -33,7 +33,7 @@ ArrayConfig::ArrayConfig(YAML::Node arrayConfig)
       useEVACAMCost(arrayConfig["useEVACAMCost"].as<bool>()){};
 
 void ArrayConfig::print() {
-  std::cout << "Arch Config: " << std::endl;
+  std::cout << "Array Config: " << std::endl;
   std::cout << "- bit: " << bit << std::endl;
   std::cout << "- cell: " << cell << std::endl;
   std::cout << "- col: " << col << std::endl;

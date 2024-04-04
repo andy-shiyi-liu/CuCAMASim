@@ -16,6 +16,7 @@ add_definitions(-D__MAIN__)
 include_directories(
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/util
+    ${CMAKE_SOURCE_DIR}/CuCAMASim/include/function
     ${CMAKE_SOURCE_DIR}/../ref/include/
 )
 

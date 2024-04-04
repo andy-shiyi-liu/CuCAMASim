@@ -4,4 +4,6 @@
 
 #include "config.h"
 
-CuCAMASim::CuCAMASim() { std::cout << "in CuCAMASim()" << std::endl; }
+CuCAMASim::CuCAMASim(CamConfig *camConfig) : config(camConfig) {
+  std::cout << "in CuCAMASim()" << std::endl;
+}
