@@ -44,9 +44,41 @@ class ArrayConfig : public Config {
   void print();
 };
 
-class NoiseConfig : public Config {};
 
-class CellConfig : public Config {};
+class NoiseConfig : public Config {
+ private:
+  const std::string cellDesign;
+  const std::string device;
+  const bool hasWriteNoise;
+  const double maxConductance;
+  const double minConductance;
+  std::map<std::string, std::map<std::string, std::string>> noiseType;
+  public:
+  NoiseConfig(YAML::Node noiseConfig);
+  void print();
+};
+
+class CellConfig : public Config {
+private:
+  const std::string design;
+  const std::string device;
+  const double maxConductance;
+  const double minConductance;
+  const std::string representation;
+  const std::string type;
+  NoiseConfig *noiseConfig;
+public:
+  CellConfig(YAML::Node cellConfig, NoiseConfig *noiseConfig);
+  void print();
+};
+
+class MappingConfig : public Config {
+private:
+  std::map<std::string, std::map<std::string, std::string>> strategies;
+public:
+  MappingConfig(YAML::Node MappingConfig);
+  void print();
+};
 
 class CamConfig : public Config {
  private:
@@ -55,6 +87,7 @@ class CamConfig : public Config {
   CellConfig *cellConfig;
   QueryConfig *queryConfig;
   NoiseConfig *noiseConfig;
+  MappingConfig *mappingConfig;
 
  public:
   CamConfig(std::string configPath);
@@ -64,6 +97,7 @@ class CamConfig : public Config {
     delete cellConfig;
     delete queryConfig;
     delete noiseConfig;
+    delete mappingConfig;
   };
 };
 
