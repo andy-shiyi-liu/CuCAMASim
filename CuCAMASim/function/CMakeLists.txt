@@ -16,6 +16,8 @@ if(NOT yaml-cpp_POPULATED)
 endif()
 
 add_library(lib_function ${FUNCTION_DIR})
+
+# Linking libraries
 target_link_libraries(lib_function PUBLIC yaml-cpp::yaml-cpp)
 
 # Treat warnings as errors for C and C++ files
