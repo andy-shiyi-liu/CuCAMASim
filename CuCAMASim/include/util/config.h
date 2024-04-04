@@ -20,13 +20,14 @@ class ArchConfig : public Config {
 class QueryConfig : public Config {
  private:
   const bool funcSim, perfEval;
-  uint16_t bit;
-  double distanceParameter, parameter;
-  std::string distance, searchScheme;
+  const uint16_t bit;
+  const double distanceParameter, parameter;
+  const std::string distance, searchScheme;
 
  public:
   QueryConfig(YAML::Node queryConfig);
   void print();
+  uint16_t getBit() { return bit; }
 };
 
 class ArrayConfig : public Config {
@@ -69,6 +70,13 @@ private:
   NoiseConfig *noiseConfig;
 public:
   CellConfig(YAML::Node cellConfig, NoiseConfig *noiseConfig);
+  std::string getDesign() { return design; }
+  std::string getDevice() { return device; }
+  std::string getPhysicalRep() { return representation; }
+  std::string getType() { return type; }
+  NoiseConfig *getNoiseConfig() { return noiseConfig; }
+  double getMaxConductance() { return maxConductance; }
+  double getMinConductance() { return minConductance; }
   void print();
 };
 
@@ -91,6 +99,8 @@ class CamConfig : public Config {
 
  public:
   CamConfig(std::string configPath);
+  QueryConfig *getQueryConfig() { return queryConfig; }
+  CellConfig *getCellConfig() { return cellConfig; }
   ~CamConfig() {
     delete archConfig;
     delete arrayConfig;

@@ -14,18 +14,18 @@
 
 class FunctionSimulator {
  private:
-  const CamConfig *camConfig;
-  const Quantize *quantizer;
-  const ConvertToPhys *converter;
-  const Mapping *mapping;
-  const CAMSearch *search;
-  const WriteNoise *writeNoise;
+  CamConfig *camConfig;
+  Quantize *quantizer;
+  ConvertToPhys *converter;
+  Mapping *mapping;
+  CAMSearch *search;
+  WriteNoise *writeNoise;
 
  public:
-  FunctionSimulator(const CamConfig *camConfig) : camConfig(camConfig) {
+  FunctionSimulator(CamConfig *camConfig) : camConfig(camConfig) {
     std::cout << "in FunctionSimulator()" << std::endl;
-    quantizer = new Quantize();
-    converter = new ConvertToPhys();
+    quantizer = new Quantize(camConfig->getQueryConfig());
+    converter = new ConvertToPhys(camConfig->getCellConfig());
     mapping = new Mapping();
     search = new CAMSearch();
     writeNoise = new WriteNoise();
