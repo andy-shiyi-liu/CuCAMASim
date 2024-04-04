@@ -42,9 +42,15 @@ class ArrayConfig : public Config {
 
  public:
   ArrayConfig(YAML::Node arrayConfig);
+  uint16_t getBit() { return bit; }
+  uint32_t getCol() { return col; }
+  uint32_t getRow() { return row; }
+  std::string getCell() { return cell; }
+  std::string getSensing() { return sensing; }
+  double getSensingLimit() { return sensingLimit; }
+  bool getUseEVACAMCost() { return useEVACAMCost; }
   void print();
 };
-
 
 class NoiseConfig : public Config {
  private:
@@ -54,13 +60,14 @@ class NoiseConfig : public Config {
   const double maxConductance;
   const double minConductance;
   std::map<std::string, std::map<std::string, std::string>> noiseType;
-  public:
+
+ public:
   NoiseConfig(YAML::Node noiseConfig);
   void print();
 };
 
 class CellConfig : public Config {
-private:
+ private:
   const std::string design;
   const std::string device;
   const double maxConductance;
@@ -68,7 +75,8 @@ private:
   const std::string representation;
   const std::string type;
   NoiseConfig *noiseConfig;
-public:
+
+ public:
   CellConfig(YAML::Node cellConfig, NoiseConfig *noiseConfig);
   std::string getDesign() { return design; }
   std::string getDevice() { return device; }
@@ -81,9 +89,10 @@ public:
 };
 
 class MappingConfig : public Config {
-private:
+ private:
   std::map<std::string, std::map<std::string, std::string>> strategies;
-public:
+
+ public:
   MappingConfig(YAML::Node MappingConfig);
   void print();
 };
@@ -101,6 +110,18 @@ class CamConfig : public Config {
   CamConfig(std::string configPath);
   QueryConfig *getQueryConfig() { return queryConfig; }
   CellConfig *getCellConfig() { return cellConfig; }
+  ArrayConfig *getArrayConfig() { return arrayConfig; }
+  ArchConfig *getArchConfig() { return archConfig; }
+  MappingConfig *getMappingConfig() { return mappingConfig; }
+  void print() {
+    archConfig->print();
+    arrayConfig->print();
+    cellConfig->print();
+    queryConfig->print();
+    noiseConfig->print();
+    mappingConfig->print();
+  };
+
   ~CamConfig() {
     delete archConfig;
     delete arrayConfig;
