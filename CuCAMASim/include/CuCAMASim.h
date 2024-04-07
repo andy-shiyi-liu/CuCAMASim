@@ -6,6 +6,7 @@
 #include "arch/ArchEstimator.h"
 #include "function/FunctionSimulator.h"
 #include "util/config.h"
+#include "performance/PerformanceEvaluator.h"
 
 class SimResult {
  public:
@@ -23,6 +24,7 @@ class CuCAMASim {
   const CamConfig *config;
   const FunctionSimulator *functionSimulator;
   const ArchEstimator *archEstimator;
+  const PerformanceEvaluator *performanceEvaluator;
   SimResult simResult;
 
  public:
@@ -30,11 +32,13 @@ class CuCAMASim {
     std::cout << "in CuCAMASim()" << std::endl;
     functionSimulator = new FunctionSimulator(camConfig);
     archEstimator = new ArchEstimator(camConfig);
+    performanceEvaluator = new PerformanceEvaluator();
     std::cout << "CuCAMASim() done" << std::endl;
   };
   ~CuCAMASim() {
     delete functionSimulator;
     delete archEstimator;
+    delete performanceEvaluator;
   };
 };
 #endif
