@@ -28,6 +28,12 @@ class QueryConfig : public Config {
   QueryConfig(YAML::Node queryConfig);
   void print();
   uint16_t getBit() { return bit; }
+  double getDistanceParameter() { return distanceParameter; }
+  double getParameter() { return parameter; }
+  std::string getDistance() { return distance; }
+  std::string getSearchScheme() { return searchScheme; }
+  bool getFuncSim() { return funcSim; }
+  bool getPerfEval() { return perfEval; }
 };
 
 class ArrayConfig : public Config {
