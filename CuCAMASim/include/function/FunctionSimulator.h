@@ -28,7 +28,7 @@ class FunctionSimulator {
     converter = new ConvertToPhys(camConfig->getCellConfig());
     mapping = new Mapping(camConfig->getArrayConfig());
     search = new CAMSearch(camConfig->getQueryConfig(), camConfig->getArrayConfig());
-    writeNoise = new WriteNoise();
+    writeNoise = new WriteNoise(camConfig->getNoiseConfig());
     std::cout << "FunctionSimulator() done" << std::endl;
   }
   ~FunctionSimulator() {

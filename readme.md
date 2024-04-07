@@ -4,5 +4,3 @@ A cpp/CUDA implementation of [CAMASim](https://github.com/menggg22/CAMASim), a c
 > this repo is still under development
 
 Todo:
-- initiate functional simulator
-  - finish initiating CAMSearch

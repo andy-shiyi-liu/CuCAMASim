@@ -69,6 +69,14 @@ class NoiseConfig : public Config {
 
  public:
   NoiseConfig(YAML::Node noiseConfig);
+  std::string getCellDesign() { return cellDesign; }
+  std::string getDevice() { return device; }
+  bool getHasWriteNoise() { return hasWriteNoise; }
+  double getMaxConductance() { return maxConductance; }
+  double getMinConductance() { return minConductance; }
+  std::map<std::string, std::map<std::string, std::string>> getNoiseType() {
+    return noiseType;
+  }
   void print();
 };
 
@@ -119,6 +127,7 @@ class CamConfig : public Config {
   ArrayConfig *getArrayConfig() { return arrayConfig; }
   ArchConfig *getArchConfig() { return archConfig; }
   MappingConfig *getMappingConfig() { return mappingConfig; }
+  NoiseConfig* getNoiseConfig() { return noiseConfig; }
   void print() {
     archConfig->print();
     arrayConfig->print();
