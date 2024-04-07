@@ -1,4 +1,4 @@
-#include "FunctionSimulator.h"
+#include "function/FunctionSimulator.h"
 
 #include <iostream>
-#include "distance.cuh"
+#include "function/cuda/distance.cuh"

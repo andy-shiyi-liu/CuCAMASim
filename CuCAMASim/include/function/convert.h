@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-#include "config.h"
+#include "util/config.h"
 
 class ConvertToPhys {
  private:

@@ -15,8 +15,6 @@ set(CMAKE_CXX_STANDARD 17)
 # Include header files from specific directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/
-    ${CMAKE_SOURCE_DIR}/CuCAMASim/include/util
-    ${CMAKE_SOURCE_DIR}/CuCAMASim/include/function
 )
 
 add_subdirectory(./CuCAMASim)

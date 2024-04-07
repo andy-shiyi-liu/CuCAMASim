@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "config.h"
+#include "util/config.h"
 #include "convert.h"
 #include "mapping.h"
 #include "quantize.h"

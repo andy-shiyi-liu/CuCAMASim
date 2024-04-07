@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "config.h"
-#include "FunctionSimulator.h"
+#include "util/config.h"
+#include "function/FunctionSimulator.h"
 
 CuCAMASim::CuCAMASim(CamConfig *camConfig) : config(camConfig) {
   std::cout << "in CuCAMASim()" << std::endl;

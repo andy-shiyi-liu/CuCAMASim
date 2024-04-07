@@ -6,4 +6,3 @@ A cpp/CUDA implementation of [CAMASim](https://github.com/menggg22/CAMASim), a c
 Todo:
 - initiate functional simulator
   - finish initiating CAMSearch
-    - finish define functions for calculating distances

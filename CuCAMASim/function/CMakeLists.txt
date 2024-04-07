@@ -2,7 +2,6 @@ find_package(CUDAToolkit)
 aux_source_directory(. FUNCTION_DIR)
 set(CMAKE_CUDA_STANDARD 17)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 
 include(FetchContent)
 # yaml package

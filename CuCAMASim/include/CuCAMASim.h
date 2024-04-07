@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "FunctionSimulator.h"
+#include "function/FunctionSimulator.h"
 #include "util/config.h"
 
 class CuCAMASim {
