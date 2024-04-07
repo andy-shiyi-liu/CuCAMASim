@@ -3,6 +3,7 @@ aux_source_directory(. CUCAMASIM_DIR)
 set(CMAKE_CUDA_STANDARD 17)
 add_subdirectory(./util)
 add_subdirectory(./function)
+add_subdirectory(./arch)
 add_library(lib_CuCAMASim ${CUCAMASIM_DIR})
 
 

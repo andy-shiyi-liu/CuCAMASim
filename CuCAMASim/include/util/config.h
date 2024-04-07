@@ -8,11 +8,11 @@ class Config {};
 
 class ArchConfig : public Config {
  private:
-  const unsigned arrays_per_mat, mats_per_bank, subarrays_per_array;
+  const uint64_t arrays_per_mat, mats_per_bank, subarrays_per_array;
 
  public:
-  ArchConfig(unsigned arrays_per_mat, unsigned mats_per_bank,
-             unsigned subarrays_per_array);
+  ArchConfig(uint64_t arrays_per_mat, uint64_t mats_per_bank,
+             uint64_t subarrays_per_array);
   ArchConfig(YAML::Node archConfig);
   void print();
 };

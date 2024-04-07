@@ -5,16 +5,16 @@
 #include <iostream>
 #include <string>
 
-ArchConfig::ArchConfig(unsigned arrays_per_mat, unsigned mats_per_bank,
-                       unsigned subarrays_per_array)
+ArchConfig::ArchConfig(uint64_t arrays_per_mat, uint64_t mats_per_bank,
+                       uint64_t subarrays_per_array)
     : arrays_per_mat(arrays_per_mat),
       mats_per_bank(mats_per_bank),
       subarrays_per_array(subarrays_per_array){};
 
 ArchConfig::ArchConfig(YAML::Node archConfig)
-    : arrays_per_mat(archConfig["ArraysPerMat"].as<unsigned>()),
-      mats_per_bank(archConfig["MatsPerBank"].as<unsigned>()),
-      subarrays_per_array(archConfig["SubarraysPerArray"].as<unsigned>()){};
+    : arrays_per_mat(archConfig["ArraysPerMat"].as<uint64_t>()),
+      mats_per_bank(archConfig["MatsPerBank"].as<uint64_t>()),
+      subarrays_per_array(archConfig["SubarraysPerArray"].as<uint64_t>()){};
 
 void ArchConfig::print() {
   std::cout << "Arch Config: " << std::endl;
