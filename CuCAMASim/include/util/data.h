@@ -25,6 +25,11 @@ class CAMData : public Data {
       this->data[i] = data[i];
     }
   };
+  void printDim(){
+    std::cout << "nRows: " << dim.nRows << std::endl;
+    std::cout << "nCols: " << dim.nCols << std::endl;
+    std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
+  }
   ~CAMData(){
     delete[] data;
   };

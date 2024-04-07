@@ -15,9 +15,11 @@ set(CMAKE_CXX_STANDARD 17)
 # Include header files from specific directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/
+    ${CMAKE_SOURCE_DIR}/applications/DecisionTree/
 )
 
 add_subdirectory(./CuCAMASim)
+add_subdirectory(./applications/DecisionTree)
 
 add_executable(CuCAMASim_runner main.cpp)
 
@@ -29,7 +31,8 @@ include(CPack)
 set_target_properties(CuCAMASim_runner PROPERTIES CUDA_ARCHITECTURES 61)
 
 # Linking libraries
-target_link_libraries(CuCAMASim_runner PRIVATE lib_CuCAMASim CUDA::cudart)
+target_link_libraries(CuCAMASim_runner PRIVATE CUDA::cudart)
+target_link_libraries(CuCAMASim_runner PUBLIC lib_CuCAMASim lib_DecisionTree)
 
 # Link against filesystem library if using GCC version < 9
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)

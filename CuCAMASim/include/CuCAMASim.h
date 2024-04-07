@@ -5,8 +5,9 @@
 
 #include "arch/ArchEstimator.h"
 #include "function/FunctionSimulator.h"
-#include "util/config.h"
 #include "performance/PerformanceEvaluator.h"
+#include "util/config.h"
+#include "util/data.h"
 
 class SimResult {
  public:
@@ -35,6 +36,7 @@ class CuCAMASim {
     performanceEvaluator = new PerformanceEvaluator();
     std::cout << "CuCAMASim() done" << std::endl;
   };
+  void write(CAMData &CAMData);
   ~CuCAMASim() {
     delete functionSimulator;
     delete archEstimator;
