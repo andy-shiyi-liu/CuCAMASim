@@ -5,35 +5,86 @@
 #include <iostream>
 #include <list>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "util/data.h"
 
-class treeNode {};
+enum TreeNodeType { LEAF_NODE, STEM_NODE, INVALID };
 
-class stemNode;
-
-class leafNode : public treeNode {
+class TreeNode {
  private:
-  uint64_t classID;
-  treeNode *parent;
+  TreeNodeType type = INVALID;
+
+ public:
+  virtual TreeNodeType getType() { return type; };
+  virtual ~TreeNode() {}
 };
 
-class stemNode : public treeNode {
+class StemNode;
+
+class LeafNode : public TreeNode {
  private:
-  uint64_t featureID;
-  double threshold;
-  treeNode *leNode;
-  treeNode *gtNode;
-  treeNode *parent;
+  uint64_t classID = (uint64_t)-1;
+  TreeNode *parent = NULL;
+  TreeNodeType type = LEAF_NODE;
+
+ public:
+  LeafNode(uint64_t classID, TreeNode *parent)
+      : classID(classID), parent(parent) {}
+  TreeNodeType getType() override { return type; };
+  uint64_t getClassID() { return classID; };
+  virtual ~LeafNode() {}
+};
+
+class StemNode : public TreeNode {
+ private:
+  uint64_t featureID = (uint64_t)-1;
+  double threshold = 0.0;
+  TreeNode *leNode = NULL;
+  TreeNode *gtNode = NULL;
+  TreeNode *parent = NULL;
+  TreeNodeType type = STEM_NODE;
+
+ public:
+  StemNode(uint64_t featureID, double threshold, TreeNode *parent)
+      : featureID(featureID), threshold(threshold), parent(parent){};
+  StemNode(){};
+  void init(uint64_t featureID, double threshold, TreeNode *parent,
+            TreeNode *leNode, TreeNode *gtNode) {
+    this->featureID = featureID;
+    this->threshold = threshold;
+    this->parent = parent;
+    this->leNode = leNode;
+    this->gtNode = gtNode;
+  };
+  uint64_t getFeatureID() { return featureID; };
+  double getThreshold() { return threshold; };
+  TreeNode *getLeNode() { return leNode; };
+  TreeNode *getGtNode() { return gtNode; };
+  TreeNode *getParent() { return parent; };
+  TreeNodeType getType() override { return type; };
+
+  virtual ~StemNode() {
+    delete leNode;
+    delete gtNode;
+  };
 };
 
 class DecisionTree {
  private:
-  std::list<std::string> treeText;
+  std::vector<std::string> treeText;
   CAMData *camData = NULL;
+  std::list<LeafNode *> leafNodes;
+  std::list<uint64_t> featureIDs;
+  std::list<uint64_t> classIDs;
+  std::list<double> thresholds;
+  TreeNode *rootNode = NULL;
+
   void parseTreeText();
+  TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);
+  void printSubTree(TreeNode* treeNode, std::string spacing);
 
  public:
   DecisionTree(const std::string &treeTextPath) {
@@ -53,8 +104,10 @@ class DecisionTree {
       throw std::runtime_error("Error: file" + treeTextPath +
                                "cannot be opened");
     }
+    parseTreeText();
   };
-  void print() {
+  void printTree();
+  void printTreeText() {
     std::ostringstream oss;  // Create a string stream
     for (const auto &line : treeText) {
       oss << line + "\n";  // Append each line to the string stream

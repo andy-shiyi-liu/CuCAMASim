@@ -12,6 +12,8 @@ Using dev container is recommended. Steps:
 5. run vscode command `Dev Containers: Open Folder in Container` and select the current folder to open it
 
 ## Todo
+- finish dt2cam
+  - finish tree to cam array
 - finish CuCAMASim::write()
   - load cam data
 - init PerformanceEvaluator
