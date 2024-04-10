@@ -15,9 +15,11 @@ enum TreeNodeType { LEAF_NODE, STEM_NODE, INVALID };
 
 class TreeNode {
  private:
+  TreeNode *parent = NULL;
   TreeNodeType type = INVALID;
 
  public:
+  virtual TreeNode* getParent() { return parent; }
   virtual TreeNodeType getType() { return type; };
   virtual ~TreeNode() {}
 };
@@ -35,6 +37,7 @@ class LeafNode : public TreeNode {
       : classID(classID), parent(parent) {}
   TreeNodeType getType() override { return type; };
   uint64_t getClassID() { return classID; };
+  TreeNode *getParent() override { return parent; };
   virtual ~LeafNode() {}
 };
 
@@ -63,7 +66,7 @@ class StemNode : public TreeNode {
   double getThreshold() { return threshold; };
   TreeNode *getLeNode() { return leNode; };
   TreeNode *getGtNode() { return gtNode; };
-  TreeNode *getParent() { return parent; };
+  TreeNode *getParent() override { return parent; };
   TreeNodeType getType() override { return type; };
 
   virtual ~StemNode() {
@@ -77,7 +80,7 @@ class DecisionTree {
   std::vector<std::string> treeText;
   CAMData *camData = NULL;
   std::list<LeafNode *> leafNodes;
-  std::list<uint64_t> featureIDs;
+  std::vector<uint64_t> featureIDs;
   std::list<uint64_t> classIDs;
   std::list<double> thresholds;
   TreeNode *rootNode = NULL;
@@ -85,6 +88,7 @@ class DecisionTree {
   void parseTreeText();
   TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);
   void printSubTree(TreeNode* treeNode, std::string spacing);
+  CAMData* tree2camThresholdArray();
 
  public:
   DecisionTree(const std::string &treeTextPath) {
@@ -104,7 +108,6 @@ class DecisionTree {
       throw std::runtime_error("Error: file" + treeTextPath +
                                "cannot be opened");
     }
-    parseTreeText();
   };
   void printTree();
   void printTreeText() {

@@ -1,5 +1,8 @@
 #include "dt2cam.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 #include <iomanip>
 #include <regex>
 
@@ -84,7 +87,58 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
   }
 };
 
-CAMData* DecisionTree::toCAM() { return camData; };
+CAMData* DecisionTree::tree2camThresholdArray() {
+  CAMData* camData = new CAMData(leafNodes.size(), featureIDs.size());
+  std::sort(featureIDs.begin(), featureIDs.end());
+
+  for (uint64_t featureID : featureIDs) {
+    camData->col2featureID.push_back(featureID);
+  }
+
+  for (LeafNode* leafNode : leafNodes) {
+    TreeNode* currentNode = leafNode;
+    camData->row2classID.push_back(leafNode->getClassID());
+    while (currentNode->getParent() != NULL) {
+      // assert that parentNode is a StemNode
+      assert(currentNode->getParent()->getType() == STEM_NODE);
+      StemNode* parentNode = dynamic_cast<StemNode*>(currentNode->getParent());
+      uint64_t featureID = parentNode->getFeatureID();
+      uint8_t boundaryID;
+      if (currentNode == parentNode->getLeNode()) {
+        boundaryID = 1;
+      } else {
+        assert(currentNode == parentNode->getGtNode());
+        boundaryID = 0;
+      }
+      double threshold = parentNode->getThreshold();
+      uint64_t rowID = camData->row2classID.size() - 1;
+      auto it = std::find(featureIDs.begin(), featureIDs.end(), featureID);
+      assert(it != featureIDs.end() && "featureID not found in featureIDs");
+      uint64_t colID = std::distance(featureIDs.begin(), it);
+      if (std::isinf(camData->at(rowID, colID, boundaryID))) {
+        camData->at(rowID, colID, boundaryID) = threshold;
+      } else {
+        if (boundaryID == 0) {
+          camData->at(rowID, colID, boundaryID) =
+              std::max(camData->at(rowID, colID, boundaryID), threshold);
+        } else {
+          assert(boundaryID == 1);
+          camData->at(rowID, colID, boundaryID) =
+              std::min(camData->at(rowID, colID, boundaryID), threshold);
+        }
+      }
+      currentNode = parentNode;
+    }
+  }
+  assert(camData->checkDim() && "CAMData dimensions do not match");
+  return camData;
+};
+
+CAMData* DecisionTree::toCAM() {
+  parseTreeText();
+  CAMData* camData = tree2camThresholdArray();
+  return camData;
+};
 
 void DecisionTree::printTree() {
   if (rootNode == NULL) {
