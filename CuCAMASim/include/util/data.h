@@ -22,7 +22,7 @@ class CAMData : public Data {
  public:
   std::vector<double> col2featureID;
   std::vector<double> row2classID;
-  double *data;
+  double *data = nullptr;
 
   CAMData(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
@@ -70,7 +70,12 @@ class CAMData : public Data {
     }
     file.close();
   }
-  ~CAMData() { delete[] data; data = nullptr;};
+  ~CAMData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
 };
 
 class QueryData : public Data {
@@ -79,7 +84,7 @@ class QueryData : public Data {
     uint32_t nVectors;
     uint32_t nFeatures;
   } dim;
-  double *data;
+  double *data = nullptr;
 
  public:
   QueryData(uint32_t nVectors, uint32_t nFeatures) {
@@ -91,19 +96,25 @@ class QueryData : public Data {
   double &at(int vecNum, int featureNum) {
     return data[featureNum + dim.nFeatures * vecNum];
   }
-  ~QueryData() { delete[] data; data = nullptr;};
+  ~QueryData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
 };
 
-class TrainInputs : public Data {
+// for test data in dataset
+class InputData : public Data {
  private:
-  struct TrainInputsDim {
+  struct InputDataDim {
     uint32_t nVectors;
     uint32_t nFeatures;
   } dim;
-  double *data;
+  double *data = nullptr;
 
  public:
-  TrainInputs(uint32_t nVectors, uint32_t nFeatures, double *data) {
+  InputData(uint32_t nVectors, uint32_t nFeatures, double *data) {
     dim.nVectors = nVectors;
     dim.nFeatures = nFeatures;
     this->data = data;
@@ -111,17 +122,90 @@ class TrainInputs : public Data {
   double &at(int vecNum, int featureNum) {
     return data[featureNum + dim.nFeatures * vecNum];
   }
-  ~TrainInputs() {
-    delete[] data;
-    data = nullptr;
+  void toCSV(const std::filesystem::path &outputPath) {
+    toCSV(outputPath, ",");
+  }
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) {
+    std::ofstream file(outputPath);
+    for (uint32_t i = 0; i < dim.nVectors; i++) {
+      for (uint32_t j = 0; j < dim.nFeatures; j++) {
+        file << at(i, j) << sep;
+      }
+      file << std::endl;
+    }
+    file.close();
+  }
+  ~InputData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
+};
+
+// for label data in the dataset
+class LabelData : public Data {
+ private:
+  struct LabelDataDim {
+    uint32_t nVectors;
+  } dim;
+  uint64_t *data = nullptr;
+
+ public:
+  LabelData(uint32_t nVectors, uint64_t *data) {
+    dim.nVectors = nVectors;
+    this->data = data;
+  }
+  void toCSV(const std::filesystem::path &outputPath) {
+    toCSV(outputPath, ",");
+  }
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) {
+    std::ofstream file(outputPath);
+    for (uint32_t i = 0; i < dim.nVectors; i++) {
+      file << at(i) << sep;
+    }
+    file.close();
+  }
+  uint64_t &at(int vecNum) { return data[vecNum]; }
+  ~LabelData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
   };
 };
 
 class Dataset {
  private:
-  std::map<std::string, std::filesystem::path> datasetPath;
+  void loadDataset(std::filesystem::path datasetPath);
 
  public:
+  InputData *trainInputs = nullptr;
+  LabelData *trainLabels = nullptr;
+  InputData *testInputs = nullptr;
+  LabelData *testLabels = nullptr;
+  Dataset(std::filesystem::path datasetPath) {
+    // load the dataset
+    loadDataset(datasetPath);
+  };
+  ~Dataset() {
+    if (trainInputs != nullptr) {
+      delete trainInputs;
+      trainInputs = nullptr;
+    }
+    if (trainLabels != nullptr) {
+      delete trainLabels;
+      trainLabels = nullptr;
+    }
+    if (testInputs != nullptr) {
+      delete testInputs;
+      testInputs = nullptr;
+    }
+    if (testLabels != nullptr) {
+      delete testLabels;
+      testLabels = nullptr;
+    }
+  };
 };
 
 #endif

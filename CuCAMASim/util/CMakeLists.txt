@@ -15,8 +15,12 @@ if(NOT yaml-cpp_POPULATED)
   add_subdirectory(${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR})
 endif()
 
+include_directories(/usr/local/include)
+link_directories(/usr/local/lib)
+
 add_library(lib_util ${UTIL_DIR})
-target_link_libraries(lib_util PUBLIC yaml-cpp::yaml-cpp)
+# Include directories for matio
+target_link_libraries(lib_util PUBLIC yaml-cpp::yaml-cpp matio)
 
 # Treat warnings as errors for C and C++ files
 if(MSVC)
