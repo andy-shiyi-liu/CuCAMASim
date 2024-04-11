@@ -3,7 +3,9 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <filesystem>
 #include <string>
+
 class Config {};
 
 class ArchConfig : public Config {
@@ -121,13 +123,13 @@ class CamConfig : public Config {
   MappingConfig *mappingConfig;
 
  public:
-  CamConfig(std::string configPath);
+  CamConfig(const std::filesystem::path& configPath);
   QueryConfig *getQueryConfig() { return queryConfig; }
   CellConfig *getCellConfig() { return cellConfig; }
   ArrayConfig *getArrayConfig() { return arrayConfig; }
   ArchConfig *getArchConfig() { return archConfig; }
   MappingConfig *getMappingConfig() { return mappingConfig; }
-  NoiseConfig* getNoiseConfig() { return noiseConfig; }
+  NoiseConfig *getNoiseConfig() { return noiseConfig; }
   void print() {
     archConfig->print();
     arrayConfig->print();

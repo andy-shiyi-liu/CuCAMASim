@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <filesystem>
 
 class Data {};
 
@@ -56,10 +57,10 @@ class CAMData : public Data {
     std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
   }
 
-  void toCSV(std::string outputPath) {
+  void toCSV(const std::filesystem::path& outputPath) {
     toCSV(outputPath, ",");
   }
-  void toCSV(std::string outputPath, std::string sep) {
+  void toCSV(const std::filesystem::path& outputPath, std::string sep) {
     std::ofstream file(outputPath);
     // print col2featureID as column name
     file << sep;

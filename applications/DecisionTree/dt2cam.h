@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "util/data.h"
 
@@ -91,7 +92,7 @@ class DecisionTree {
   CAMData* tree2camThresholdArray();
 
  public:
-  DecisionTree(const std::string &treeTextPath) {
+  DecisionTree(const std::filesystem::path& treeTextPath) {
     // Code to read the tree text from the file at treeTextPath
     // and initialize the treeText member variable
     std::ifstream file(treeTextPath);
@@ -105,8 +106,8 @@ class DecisionTree {
       file.close();
     } else {
       // Handle error when file cannot be opened
-      throw std::runtime_error("Error: file" + treeTextPath +
-                               "cannot be opened");
+      throw std::runtime_error("Error: file " + std::string(treeTextPath) +
+                               " cannot be opened");
     }
   };
   void printTree();

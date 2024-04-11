@@ -145,7 +145,7 @@ void MappingConfig::print() {
   }
 }
 
-CamConfig::CamConfig(std::string configPath) {
+CamConfig::CamConfig(const std::filesystem::path& configPath) {
   std::cout << "Using config: " << configPath << std::endl;
   YAML::Node camConfig = YAML::LoadFile(configPath);
   YAML::Node arch_config_yaml = camConfig["arch"];
