@@ -1,6 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
 
+#include <cassert>
+#include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -18,11 +20,13 @@ class CAMData : public Data {
     uint32_t nCols;
     uint32_t nBoundaries;
   } dim;
+  double _min = +std::numeric_limits<double>::infinity(),
+         _max = -std::numeric_limits<double>::infinity();
+  double *data = nullptr;
 
  public:
   std::vector<double> col2featureID;
   std::vector<double> row2classID;
-  double *data = nullptr;
 
   CAMData(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
@@ -32,14 +36,22 @@ class CAMData : public Data {
     this->data = new double[nElem];
     for (uint32_t i = 0; i < nRows; i++) {
       for (uint32_t j = 0; j < nCols; j++) {
-        at(i, j, 0) = -std::numeric_limits<double>::infinity();
-        at(i, j, 1) = +std::numeric_limits<double>::infinity();
+        set(i, j, 0, -std::numeric_limits<double>::infinity());
+        set(i, j, 1, +std::numeric_limits<double>::infinity());
       }
     }
   };
-  double &at(int rowNum, int colNum, int bdNum) {
+  double at(int rowNum, int colNum, int bdNum) {
     int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
     return data[index];
+  }
+  void set(int rowNum, int colNum, int bdNum, double val) {
+    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+    data[index] = val;
+    if (!std::isinf(val)) {
+      _min = std::min(_min, val);
+      _max = std::max(_max, val);
+    }
   }
   bool checkDim() {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
@@ -49,7 +61,6 @@ class CAMData : public Data {
     std::cout << "nCols: " << dim.nCols << std::endl;
     std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
   }
-
   void toCSV(const std::filesystem::path &outputPath) {
     toCSV(outputPath, ",");
   }
@@ -70,6 +81,12 @@ class CAMData : public Data {
     }
     file.close();
   }
+  double min() { return _min; }
+  double max() { return _max; }
+
+  uint32_t getNRows() { return dim.nRows; }
+  uint32_t getNCols() { return dim.nCols; }
+
   ~CAMData() {
     if (data != nullptr) {
       delete[] data;

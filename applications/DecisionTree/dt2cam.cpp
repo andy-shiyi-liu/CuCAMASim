@@ -116,15 +116,15 @@ CAMData* DecisionTree::tree2camThresholdArray() {
       assert(it != featureIDs.end() && "featureID not found in featureIDs");
       uint64_t colID = std::distance(featureIDs.begin(), it);
       if (std::isinf(camData->at(rowID, colID, boundaryID))) {
-        camData->at(rowID, colID, boundaryID) = threshold;
+        camData->set(rowID, colID, boundaryID, threshold);
       } else {
         if (boundaryID == 0) {
-          camData->at(rowID, colID, boundaryID) =
-              std::max(camData->at(rowID, colID, boundaryID), threshold);
+          camData->set(rowID, colID, boundaryID,
+              std::max(camData->at(rowID, colID, boundaryID), threshold));
         } else {
           assert(boundaryID == 1);
-          camData->at(rowID, colID, boundaryID) =
-              std::min(camData->at(rowID, colID, boundaryID), threshold);
+          camData->set(rowID, colID, boundaryID,
+              std::min(camData->at(rowID, colID, boundaryID), threshold));
         }
       }
       currentNode = parentNode;

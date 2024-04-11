@@ -43,5 +43,7 @@ int main() {
   if(dataset!= nullptr){
     delete dataset;
   }
+
+  std::cout << "\033[32m" << "main() finished without error" << "\033[0m" << std::endl;
   return 0;
 }

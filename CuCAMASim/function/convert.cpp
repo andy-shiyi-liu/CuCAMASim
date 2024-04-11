@@ -1,9 +1,18 @@
 #include "function/convert.h"
 
 #include <cassert>
+#include <cmath>
+#include <iostream>
 #include <map>
 
 #include "util/data.h"
+
+template <typename T>
+T num2Vbd(T num, T numMin, T numMax, T VbdMin, T VbdMax) {
+  assert(numMin < numMax && VbdMin < VbdMax && "ERROR: invalid range");
+  T percentage = (num - numMin) / (numMax - numMin);
+  return VbdMin + (VbdMax - VbdMin) * percentage;
+}
 
 ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
                              MappingConfig *mappingConfig)
@@ -52,6 +61,8 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
           "ERROR: minConvertConductance should be larger or equal to the "
           "minConductance in the cell config");
     }
+    VbdMax = (this->*conduct2Vbd)(maxConvertConductance);
+    VbdMin = (this->*conduct2Vbd)(minConvertConductance);
   } else {
     VbdMax = (this->*conduct2Vbd)(cellConfig->maxConductance);
     VbdMin = (this->*conduct2Vbd)(cellConfig->minConductance);
@@ -104,7 +115,7 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
       lineConvertRangeMax = std::stod(N2VCvtCfg["lineConvertRangeMax"]);
     }
 
-    //setup queryClipRangeMin and queryClipRangeMax
+    // setup queryClipRangeMin and queryClipRangeMax
     if (N2VCvtCfg.find("queryClipRangeMin") != N2VCvtCfg.end() ||
         N2VCvtCfg.find("queryClipRangeMax") != N2VCvtCfg.end()) {
       if (N2VCvtCfg.find("queryClipRangeMin") == N2VCvtCfg.end() ||
@@ -130,4 +141,61 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 // Converts data to a physical representation suitable for write operations.
 // Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
 // voltage representation.
-void ConvertToPhys::write(CAMData *camData) { camData->at(0, 0, 0); }
+void ConvertToPhys::write(CAMData *camData) {
+  camData->at(0, 0, 0);
+  if (cell == "ACAM") {
+    double boundaryMin = camData->min();
+    double boundaryMax = camData->max();
+
+    assert(boundaryMin < boundaryMax &&
+           "ERROR: boundaryMin should be smaller than boundaryMax");
+    assert(!std::isinf(boundaryMin) &&
+           "ERROR: boundaryMin should not be infinity");
+    assert(!std::isinf(boundaryMax) &&
+           "ERROR: boundaryMax should not be infinity");
+
+    double Nrange = boundaryMax - boundaryMin;
+
+    // setup lineConvertRange
+    if (std::isnan(lineConvertRangeMin)) {
+      lineConvertRangeMin = boundaryMin - lineConvertRangeMargin * Nrange;
+    }
+    if (std::isnan(lineConvertRangeMax)) {
+      lineConvertRangeMax = boundaryMax + lineConvertRangeMargin * Nrange;
+    }
+
+    // setup queryClipRange
+    if (std::isnan(queryClipRangeMin)) {
+      queryClipRangeMin = boundaryMin - queryClipRangeMargin * Nrange;
+    }
+    if (std::isnan(queryClipRangeMax)) {
+      queryClipRangeMax = boundaryMax + queryClipRangeMargin * Nrange;
+    }
+    acamN2V(camData);
+  }else{
+    throw std::runtime_error("Cell types other than ACAM are not implemented");
+  }
+}
+
+// convert the data in camData from numerical to voltage representation.
+void ConvertToPhys::acamN2V(CAMData *camData) {
+  for (uint32_t i = 0; i < camData->getNRows(); i++) {
+    for (uint32_t j = 0; j < camData->getNCols(); j++) {
+      if (std::isinf(camData->at(i, j, 0))) {
+        camData->set(i, j, 0, VbdMin);
+      } else {
+        camData->set(i, j, 0,
+                     num2Vbd<double>(camData->at(i, j, 0), lineConvertRangeMin,
+                                     lineConvertRangeMax, VbdMin, VbdMax));
+      }
+      if (std::isinf(camData->at(i, j, 1))) {
+        camData->set(i, j, 1, VbdMax);
+      } else {
+        camData->set(i, j, 1,
+                     num2Vbd<double>(camData->at(i, j, 1), lineConvertRangeMin,
+                                     lineConvertRangeMax, VbdMin, VbdMax));
+      }
+    }
+  }
+  return ;
+}
