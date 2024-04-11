@@ -141,11 +141,17 @@ class CamConfig : public Config {
 
   ~CamConfig() {
     delete archConfig;
+    archConfig = nullptr;
     delete arrayConfig;
+    arrayConfig = nullptr;
     delete cellConfig;
+    cellConfig = nullptr;
     delete queryConfig;
+    queryConfig = nullptr;
     delete noiseConfig;
+    noiseConfig = nullptr;
     delete mappingConfig;
+    mappingConfig = nullptr;
   };
 };
 

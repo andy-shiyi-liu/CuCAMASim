@@ -16,7 +16,7 @@ enum TreeNodeType { LEAF_NODE, STEM_NODE, INVALID };
 
 class TreeNode {
  private:
-  TreeNode *parent = NULL;
+  TreeNode *parent = nullptr;
   TreeNodeType type = INVALID;
 
  public:
@@ -30,7 +30,7 @@ class StemNode;
 class LeafNode : public TreeNode {
  private:
   uint64_t classID = (uint64_t)-1;
-  TreeNode *parent = NULL;
+  TreeNode *parent = nullptr;
   TreeNodeType type = LEAF_NODE;
 
  public:
@@ -46,9 +46,9 @@ class StemNode : public TreeNode {
  private:
   uint64_t featureID = (uint64_t)-1;
   double threshold = 0.0;
-  TreeNode *leNode = NULL;
-  TreeNode *gtNode = NULL;
-  TreeNode *parent = NULL;
+  TreeNode *leNode = nullptr;
+  TreeNode *gtNode = nullptr;
+  TreeNode *parent = nullptr;
   TreeNodeType type = STEM_NODE;
 
  public:
@@ -72,19 +72,21 @@ class StemNode : public TreeNode {
 
   virtual ~StemNode() {
     delete leNode;
+    leNode = nullptr;
     delete gtNode;
+    gtNode = nullptr;
   };
 };
 
 class DecisionTree {
  private:
   std::vector<std::string> treeText;
-  CAMData *camData = NULL;
+  CAMData *camData = nullptr;
   std::list<LeafNode *> leafNodes;
   std::vector<uint64_t> featureIDs;
   std::list<uint64_t> classIDs;
   std::list<double> thresholds;
-  TreeNode *rootNode = NULL;
+  TreeNode *rootNode = nullptr;
 
   void parseTreeText();
   TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);

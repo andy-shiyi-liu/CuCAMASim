@@ -12,7 +12,7 @@ __global__ void helloWorld(){
 
 double* rangeQueryPairwise(CAMData *camData, QueryData *queryData){
     printf("in Range Query Pairwise\n");
-    return (double*)NULL;
+    return (double*)nullptr;
 }
 
 #endif

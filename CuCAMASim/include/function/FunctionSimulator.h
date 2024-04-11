@@ -33,10 +33,15 @@ class FunctionSimulator {
   }
   ~FunctionSimulator() {
     delete quantizer;
+    quantizer = nullptr;
     delete converter;
+    converter = nullptr;
     delete mapping;
+    mapping = nullptr;
     delete search;
+    search = nullptr;
     delete writeNoise;
+    writeNoise = nullptr;
   }
 };
 

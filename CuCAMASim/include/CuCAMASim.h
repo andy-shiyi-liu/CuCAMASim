@@ -39,8 +39,11 @@ class CuCAMASim {
   void write(CAMData &CAMData);
   ~CuCAMASim() {
     delete functionSimulator;
+    functionSimulator = nullptr;
     delete archEstimator;
+    archEstimator = nullptr;
     delete performanceEvaluator;
+    performanceEvaluator = nullptr;
   };
 };
 #endif

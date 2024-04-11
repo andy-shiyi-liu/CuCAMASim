@@ -9,7 +9,7 @@ class Mapping {
  private:
   const uint32_t rowSize, colSize;
   uint32_t rowCams = 0, colCams = 0;
-  double *camData = NULL, *queryData = NULL;
+  double *camData = nullptr, *queryData = nullptr;
 
  public:
   Mapping(ArrayConfig *arrayConfig)
@@ -18,11 +18,13 @@ class Mapping {
     std::cout << "Mapping() done" << std::endl;
   }
   ~Mapping() {
-    if (camData != NULL) {
+    if (camData != nullptr) {
       delete[] camData;
+      camData = nullptr;
     }
-    if (queryData != NULL) {
+    if (queryData != nullptr) {
       delete[] queryData;
+      queryData = nullptr;
     }
   }
 };

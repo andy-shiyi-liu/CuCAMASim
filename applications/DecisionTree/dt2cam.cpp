@@ -10,7 +10,7 @@
 
 void DecisionTree::parseTreeText() {
   uint64_t lineID = 0;
-  rootNode = parseSubTree(lineID, NULL);
+  rootNode = parseSubTree(lineID, nullptr);
   // assert that all lines are parsed
   if (lineID != treeText.size()) {
     fflush(stdout);
@@ -98,7 +98,7 @@ CAMData* DecisionTree::tree2camThresholdArray() {
   for (LeafNode* leafNode : leafNodes) {
     TreeNode* currentNode = leafNode;
     camData->row2classID.push_back(leafNode->getClassID());
-    while (currentNode->getParent() != NULL) {
+    while (currentNode->getParent() != nullptr) {
       // assert that parentNode is a StemNode
       assert(currentNode->getParent()->getType() == STEM_NODE);
       StemNode* parentNode = dynamic_cast<StemNode*>(currentNode->getParent());
@@ -141,7 +141,7 @@ CAMData* DecisionTree::toCAM() {
 };
 
 void DecisionTree::printTree() {
-  if (rootNode == NULL) {
+  if (rootNode == nullptr) {
     throw std::runtime_error("Tree not initialized");
   }
   printSubTree(rootNode, "");

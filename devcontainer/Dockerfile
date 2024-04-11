@@ -1,7 +1,7 @@
 FROM nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04
 
 RUN apt-get update && apt-get install -y \
-    htop tmux cmake make git gcc g++ gdb\
+    htop tmux cmake make git gcc g++ gdb libmatio-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # config git info
