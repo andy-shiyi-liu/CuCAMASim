@@ -16,11 +16,11 @@ class WriteNoise {
  public:
   WriteNoise(NoiseConfig *noiseConfig)
       : noiseConfig(noiseConfig),
-        hasNoise(noiseConfig->getHasWriteNoise()),
-        noiseType(noiseConfig->getNoiseType()),
-        cellDesign(noiseConfig->getCellDesign()),
-        minConductance(noiseConfig->getMinConductance()),
-        maxConductance(noiseConfig->getMaxConductance()) {
+        hasNoise(noiseConfig->hasWriteNoise),
+        noiseType(noiseConfig->noiseType),
+        cellDesign(noiseConfig->cellDesign),
+        minConductance(noiseConfig->minConductance),
+        maxConductance(noiseConfig->maxConductance) {
     std::cout << "in WriteNoise()" << std::endl;
     std::cout << "WriteNoise() done" << std::endl;
   }

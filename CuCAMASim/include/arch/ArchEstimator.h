@@ -14,9 +14,9 @@ class ArchEstimator {
  public:
   ArchEstimator(CamConfig *camConfig) {
     std::cout << "in ArchEstimator()" << std::endl;
-    archConfig = camConfig->getArchConfig();
-    nCol = camConfig->getArrayConfig()->getCol();
-    nRow = camConfig->getArrayConfig()->getRow();
+    archConfig = camConfig->archConfig;
+    nCol = camConfig->arrayConfig->col;
+    nRow = camConfig->arrayConfig->row;
     std::cout << "ArchEstimator() done" << std::endl;
   };
 };

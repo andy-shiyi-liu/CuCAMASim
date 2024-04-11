@@ -11,7 +11,7 @@ class Quantize {
   double minVal, maxVal;
 
  public:
-  Quantize(QueryConfig *queryConfig) : numBits(queryConfig->getBit()) {
+  Quantize(QueryConfig *queryConfig) : numBits(queryConfig->bit) {
     std::cout << "in Quantize()" << std::endl;
     std::cout << "Quantize() done" << std::endl;
   }

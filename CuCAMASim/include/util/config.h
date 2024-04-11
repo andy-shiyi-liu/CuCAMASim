@@ -9,10 +9,8 @@
 class Config {};
 
 class ArchConfig : public Config {
- private:
-  const uint64_t arrays_per_mat, mats_per_bank, subarrays_per_array;
-
  public:
+  const uint64_t arrays_per_mat, mats_per_bank, subarrays_per_array;
   ArchConfig(uint64_t arrays_per_mat, uint64_t mats_per_bank,
              uint64_t subarrays_per_array);
   ArchConfig(YAML::Node archConfig);
@@ -20,26 +18,17 @@ class ArchConfig : public Config {
 };
 
 class QueryConfig : public Config {
- private:
+ public:
   const bool funcSim, perfEval;
   const uint16_t bit;
   const double distanceParameter, parameter;
   const std::string distance, searchScheme;
-
- public:
   QueryConfig(YAML::Node queryConfig);
   void print();
-  uint16_t getBit() { return bit; }
-  double getDistanceParameter() { return distanceParameter; }
-  double getParameter() { return parameter; }
-  std::string getDistance() { return distance; }
-  std::string getSearchScheme() { return searchScheme; }
-  bool getFuncSim() { return funcSim; }
-  bool getPerfEval() { return perfEval; }
 };
 
 class ArrayConfig : public Config {
- private:
+ public:
   const uint16_t bit;
   const std::string cell;
   const uint32_t col;
@@ -47,43 +36,24 @@ class ArrayConfig : public Config {
   const std::string sensing;
   const double sensingLimit;
   const bool useEVACAMCost;
-
- public:
   ArrayConfig(YAML::Node arrayConfig);
-  uint16_t getBit() { return bit; }
-  uint32_t getCol() { return col; }
-  uint32_t getRow() { return row; }
-  std::string getCell() { return cell; }
-  std::string getSensing() { return sensing; }
-  double getSensingLimit() { return sensingLimit; }
-  bool getUseEVACAMCost() { return useEVACAMCost; }
   void print();
 };
 
 class NoiseConfig : public Config {
- private:
+ public:
   const std::string cellDesign;
   const std::string device;
   const bool hasWriteNoise;
   const double maxConductance;
   const double minConductance;
   std::map<std::string, std::map<std::string, std::string>> noiseType;
-
- public:
   NoiseConfig(YAML::Node noiseConfig);
-  std::string getCellDesign() { return cellDesign; }
-  std::string getDevice() { return device; }
-  bool getHasWriteNoise() { return hasWriteNoise; }
-  double getMaxConductance() { return maxConductance; }
-  double getMinConductance() { return minConductance; }
-  std::map<std::string, std::map<std::string, std::string>> getNoiseType() {
-    return noiseType;
-  }
   void print();
 };
 
 class CellConfig : public Config {
- private:
+ public:
   const std::string design;
   const std::string device;
   const double maxConductance;
@@ -91,45 +61,26 @@ class CellConfig : public Config {
   const std::string representation;
   const std::string type;
   NoiseConfig *noiseConfig;
-
- public:
   CellConfig(YAML::Node cellConfig, NoiseConfig *noiseConfig);
-  std::string getDesign() { return design; }
-  std::string getDevice() { return device; }
-  std::string getPhysicalRep() { return representation; }
-  std::string getType() { return type; }
-  NoiseConfig *getNoiseConfig() { return noiseConfig; }
-  double getMaxConductance() { return maxConductance; }
-  double getMinConductance() { return minConductance; }
   void print();
 };
 
 class MappingConfig : public Config {
- private:
-  std::map<std::string, std::map<std::string, std::string>> strategies;
-
  public:
+  std::map<std::string, std::map<std::string, std::string>> strategies;
   MappingConfig(YAML::Node MappingConfig);
   void print();
 };
 
 class CamConfig : public Config {
- private:
+ public:
   ArchConfig *archConfig;
   ArrayConfig *arrayConfig;
   CellConfig *cellConfig;
   QueryConfig *queryConfig;
   NoiseConfig *noiseConfig;
   MappingConfig *mappingConfig;
-
- public:
-  CamConfig(const std::filesystem::path& configPath);
-  QueryConfig *getQueryConfig() { return queryConfig; }
-  CellConfig *getCellConfig() { return cellConfig; }
-  ArrayConfig *getArrayConfig() { return arrayConfig; }
-  ArchConfig *getArchConfig() { return archConfig; }
-  MappingConfig *getMappingConfig() { return mappingConfig; }
-  NoiseConfig *getNoiseConfig() { return noiseConfig; }
+  CamConfig(const std::filesystem::path &configPath);
   void print() {
     archConfig->print();
     arrayConfig->print();

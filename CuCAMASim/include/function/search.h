@@ -23,12 +23,12 @@ class CAMSearch {
     CAMSearch(QueryConfig *queryConfig, ArrayConfig *arrayConfig)
             : queryConfig(queryConfig),
                 arrayConfig(arrayConfig),
-                searchScheme(queryConfig->getSearchScheme()),
-                searchParameter(queryConfig->getParameter()),
-                sensing(arrayConfig->getSensing()),
-                sensingLimit(arrayConfig->getSensingLimit()) {
+                searchScheme(queryConfig->searchScheme),
+                searchParameter(queryConfig->parameter),
+                sensing(arrayConfig->sensing),
+                sensingLimit(arrayConfig->sensingLimit) {
         std::cout << "in CAMSearch()" << std::endl;
-        std::string distanceType = queryConfig->getDistance();
+        std::string distanceType = queryConfig->distance;
         if (distanceType == "euclidean") {
             throw std::runtime_error("NotImplementedError: Euclidean distance is not implemented yet");
         } else if (distanceType == "manhattan") {

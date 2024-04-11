@@ -28,19 +28,19 @@ class ConvertToPhys {
 
  public:
 ConvertToPhys(CellConfig *cellConfig)
-        : physicalRep(cellConfig->getPhysicalRep()),
-            cell(cellConfig->getType()),
-            device(cellConfig->getDevice()),
-            design(cellConfig->getDesign()),
+        : physicalRep(cellConfig->representation),
+            cell(cellConfig->type),
+            device(cellConfig->device),
+            design(cellConfig->design),
             cellConfig(cellConfig) {
     std::cout << "in ConvertToPhys()" << std::endl;
-    if (cellConfig->getDesign() == "6T2M") {
+    if (cellConfig->design == "6T2M") {
         conduct2Vbd = &ConvertToPhys::conduct2Vbd6T2M;
-    } else if (cellConfig->getDesign() == "8T2M") {
+    } else if (cellConfig->design == "8T2M") {
         conduct2Vbd = &ConvertToPhys::conduct2Vbd8T2M;
     }
-    VbdMax = (this->*conduct2Vbd)(cellConfig->getMaxConductance());
-    VbdMin = (this->*conduct2Vbd)(cellConfig->getMinConductance());
+    VbdMax = (this->*conduct2Vbd)(cellConfig->maxConductance);
+    VbdMin = (this->*conduct2Vbd)(cellConfig->minConductance);
     std::cout << "ConvertToPhys() done" << std::endl;
 }
 ~ConvertToPhys() {}

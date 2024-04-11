@@ -13,5 +13,6 @@ Using dev container is recommended. Steps:
 
 ## Todo
 - finish CuCAMASim::write()
-  - load cam data
+  - finish FunctionSimulator::write()
+  - 
 - init PerformanceEvaluator

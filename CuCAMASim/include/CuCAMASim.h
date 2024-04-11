@@ -22,10 +22,10 @@ class SimResult {
 
 class CuCAMASim {
  private:
-  const CamConfig *config;
-  const FunctionSimulator *functionSimulator;
-  const ArchEstimator *archEstimator;
-  const PerformanceEvaluator *performanceEvaluator;
+  CamConfig *config;
+  FunctionSimulator *functionSimulator;
+  ArchEstimator *archEstimator;
+  PerformanceEvaluator *performanceEvaluator;
   SimResult simResult;
 
  public:
