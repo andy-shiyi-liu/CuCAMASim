@@ -5,5 +5,6 @@
 #include "util/data.h"
 
 extern "C" double* rangeQueryPairwise(CAMData *camData, QueryData *queryData);
+extern "C" double* softRangePairwise(CAMData *camData, QueryData *queryData);
 
 #endif

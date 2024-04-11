@@ -35,7 +35,7 @@ int main() {
   dataset->trainInputs->toCSV("/workspaces/CuCAMASim/trainInputs.csv");
   dataset->trainLabels->toCSV("/workspaces/CuCAMASim/trainLabels.csv");
 
-  CamConfig camConfig("/workspaces/CuCAMASim/accuracy_with_hardboundary.yml");
+  CamConfig camConfig("/workspaces/CuCAMASim/soft bd th match.yml");
   CuCAMASim camasim(&camConfig);
 
   camasim.write(camData);

@@ -2,6 +2,7 @@
 #define CONVERT_H
 
 #include <iostream>
+#include <limits>
 #include <string>
 
 #include "util/config.h"
@@ -16,7 +17,14 @@ class ConvertToPhys {
   CellConfig *cellConfig;
   typedef double (ConvertToPhys::*Conduct2VbdFuncPtr)(double);
   Conduct2VbdFuncPtr conduct2Vbd;
-  double VbdMin, VbdMax;
+  double VbdMin = std::numeric_limits<double>::quiet_NaN(),
+         VbdMax = std::numeric_limits<double>::quiet_NaN(),
+         lineConvertRangeMargin = std::numeric_limits<double>::quiet_NaN(),
+         queryClipRangeMargin = std::numeric_limits<double>::quiet_NaN(),
+         lineConvertRangeMin = std::numeric_limits<double>::quiet_NaN(),
+         lineConvertRangeMax = std::numeric_limits<double>::quiet_NaN(),
+         queryClipRangeMin = std::numeric_limits<double>::quiet_NaN(),
+         queryClipRangeMax = std::numeric_limits<double>::quiet_NaN();
 
   double conduct2Vbd6T2M(double x) {
     return -0.18858359 * std::exp(-0.16350861 * x) + 0.00518336 * x +
@@ -28,22 +36,7 @@ class ConvertToPhys {
   };
 
  public:
-  ConvertToPhys(CellConfig *cellConfig)
-      : physicalRep(cellConfig->representation),
-        cell(cellConfig->type),
-        device(cellConfig->device),
-        design(cellConfig->design),
-        cellConfig(cellConfig) {
-    std::cout << "in ConvertToPhys()" << std::endl;
-    if (cellConfig->design == "6T2M") {
-      conduct2Vbd = &ConvertToPhys::conduct2Vbd6T2M;
-    } else if (cellConfig->design == "8T2M") {
-      conduct2Vbd = &ConvertToPhys::conduct2Vbd8T2M;
-    }
-    VbdMax = (this->*conduct2Vbd)(cellConfig->maxConductance);
-    VbdMin = (this->*conduct2Vbd)(cellConfig->minConductance);
-    std::cout << "ConvertToPhys() done" << std::endl;
-  }
+  ConvertToPhys(CellConfig *cellConfig, MappingConfig *mappingConfig);
   void write(CAMData *camData);
   ~ConvertToPhys() {}
 };

@@ -40,7 +40,7 @@ class CAMSearch {
         } else if (distanceType == "range") {
             metric = (DistFunc)rangeQueryPairwise;
         } else if (distanceType == "softRange") {
-            throw std::runtime_error("NotImplementedError: Soft range distance is not implemented yet");
+            metric = (DistFunc)softRangePairwise;
         } else {
             throw std::runtime_error("NotImplementedError: Unknown distance type"); // Raise an exception for unknown distance type
         }

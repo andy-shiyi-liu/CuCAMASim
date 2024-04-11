@@ -25,7 +25,7 @@ class FunctionSimulator {
   FunctionSimulator(CamConfig *camConfig) : camConfig(camConfig) {
     std::cout << "in FunctionSimulator()" << std::endl;
     quantizer = new Quantize(camConfig->queryConfig);
-    converter = new ConvertToPhys(camConfig->cellConfig);
+    converter = new ConvertToPhys(camConfig->cellConfig, camConfig->mappingConfig);
     mapping = new Mapping(camConfig->arrayConfig);
     search = new CAMSearch(camConfig->queryConfig, camConfig->arrayConfig);
     writeNoise = new WriteNoise(camConfig->noiseConfig);
