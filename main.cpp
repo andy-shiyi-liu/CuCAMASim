@@ -38,6 +38,8 @@ int main() {
   CamConfig camConfig("/workspaces/CuCAMASim/accuracy_with_hardboundary.yml");
   CuCAMASim camasim(&camConfig);
 
+  camasim.write(camData);
+
   if(dataset!= nullptr){
     delete dataset;
   }

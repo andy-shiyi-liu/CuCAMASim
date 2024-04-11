@@ -31,7 +31,7 @@ class FunctionSimulator {
     writeNoise = new WriteNoise(camConfig->noiseConfig);
     std::cout << "FunctionSimulator() done" << std::endl;
   }
-  void write(CAMData &CAMData);
+  void write(CAMData *camData);
   ~FunctionSimulator() {
     delete quantizer;
     quantizer = nullptr;

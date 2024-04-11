@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "util/config.h"
+#include "util/data.h"
 
 class Quantize {
  private:
@@ -11,10 +12,11 @@ class Quantize {
   double minVal, maxVal;
 
  public:
-  Quantize(QueryConfig *queryConfig) : numBits(queryConfig->bit) {
+  Quantize(QueryConfig* queryConfig) : numBits(queryConfig->bit) {
     std::cout << "in Quantize()" << std::endl;
     std::cout << "Quantize() done" << std::endl;
   }
+  void write(CAMData* camData);
 };
 
 #endif
