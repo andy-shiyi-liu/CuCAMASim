@@ -11,14 +11,23 @@
 #include <map>
 #include <vector>
 
+enum CAMDataType {
+  CAM_DATA,
+  ACAM_DATA,
+  INVALID_CAMDATA
+};
+
 class Data {};
 
 class CAMData : public Data {
  private:
+
+ protected:
+  CAMDataType type = INVALID_CAMDATA;
   struct CAMDataDim {
     uint32_t nRows;
     uint32_t nCols;
-    uint32_t nBoundaries;
+    uint32_t nBoundaries;  // for ACAM
   } dim;
   double _min = +std::numeric_limits<double>::infinity(),
          _max = -std::numeric_limits<double>::infinity();
@@ -29,6 +38,7 @@ class CAMData : public Data {
   std::vector<double> row2classID;
 
   CAMData(uint32_t nRows, uint32_t nCols) {
+    type = CAM_DATA;
     dim.nRows = nRows;
     dim.nCols = nCols;
     dim.nBoundaries = 2;
@@ -83,6 +93,7 @@ class CAMData : public Data {
   }
   double min() { return _min; }
   double max() { return _max; }
+  CAMDataType getType() { return type; }
 
   uint32_t getNRows() { return dim.nRows; }
   uint32_t getNCols() { return dim.nCols; }
@@ -93,6 +104,13 @@ class CAMData : public Data {
       data = nullptr;
     }
   };
+};
+
+class ACAMData : public CAMData {
+ public:
+  ACAMData(uint32_t nRows, uint32_t nCols) : CAMData(nRows, nCols) {
+    type = ACAM_DATA;
+  }
 };
 
 class QueryData : public Data {

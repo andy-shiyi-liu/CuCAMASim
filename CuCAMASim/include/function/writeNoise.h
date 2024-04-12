@@ -2,6 +2,7 @@
 #define WRITE_NOISE_H
 
 #include "util/config.h"
+#include "util/data.h"
 #include <iostream>
 
 class WriteNoise {
@@ -24,6 +25,7 @@ class WriteNoise {
     std::cout << "in WriteNoise()" << std::endl;
     std::cout << "WriteNoise() done" << std::endl;
   }
+  void addWriteNoise(CAMData *camData);
 };
 
 #endif  // WRITE_NOISE_H

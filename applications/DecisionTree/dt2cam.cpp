@@ -87,8 +87,8 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
   }
 };
 
-CAMData* DecisionTree::tree2camThresholdArray() {
-  CAMData* camData = new CAMData(leafNodes.size(), featureIDs.size());
+ACAMData* DecisionTree::tree2camThresholdArray() {
+  ACAMData* camData = new ACAMData(leafNodes.size(), featureIDs.size());
   std::sort(featureIDs.begin(), featureIDs.end());
 
   for (uint64_t featureID : featureIDs) {
@@ -134,9 +134,9 @@ CAMData* DecisionTree::tree2camThresholdArray() {
   return camData;
 };
 
-CAMData* DecisionTree::toCAM() {
+ACAMData* DecisionTree::toACAM() {
   parseTreeText();
-  CAMData* camData = tree2camThresholdArray();
+  ACAMData* camData = tree2camThresholdArray();
   return camData;
 };
 

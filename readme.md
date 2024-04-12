@@ -14,5 +14,5 @@ Using dev container is recommended. Steps:
 ## Todo
 - finish CuCAMASim::write()
   - finish FunctionSimulator::write()
-    - finish Quantize::write()
+    - finish Mapping::write()
 - init PerformanceEvaluator

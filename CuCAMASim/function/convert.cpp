@@ -144,8 +144,12 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 void ConvertToPhys::write(CAMData *camData) {
   camData->at(0, 0, 0);
   if (cell == "ACAM") {
-    double boundaryMin = camData->min();
-    double boundaryMax = camData->max();
+    if (camData->getType() != ACAM_DATA) {
+      throw std::runtime_error("ERROR: CAMData type should be ACAM_DATA");
+    }
+    ACAMData *acamData = static_cast<ACAMData *>(camData);
+    double boundaryMin = acamData->min();
+    double boundaryMax = acamData->max();
 
     assert(boundaryMin < boundaryMax &&
            "ERROR: boundaryMin should be smaller than boundaryMax");
@@ -171,14 +175,15 @@ void ConvertToPhys::write(CAMData *camData) {
     if (std::isnan(queryClipRangeMax)) {
       queryClipRangeMax = boundaryMax + queryClipRangeMargin * Nrange;
     }
-    acamN2V(camData);
-  }else{
-    throw std::runtime_error("Cell types other than ACAM are not implemented yet");
+    acamN2V(acamData);
+  } else {
+    throw std::runtime_error(
+        "Cell types other than ACAM are not implemented yet");
   }
 }
 
 // convert the data in camData from numerical to voltage representation.
-void ConvertToPhys::acamN2V(CAMData *camData) {
+void ConvertToPhys::acamN2V(ACAMData *camData) {
   for (uint32_t i = 0; i < camData->getNRows(); i++) {
     for (uint32_t j = 0; j < camData->getNCols(); j++) {
       if (std::isinf(camData->at(i, j, 0))) {
@@ -197,5 +202,5 @@ void ConvertToPhys::acamN2V(CAMData *camData) {
       }
     }
   }
-  return ;
+  return;
 }

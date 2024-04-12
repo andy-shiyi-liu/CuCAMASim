@@ -13,4 +13,13 @@ void FunctionSimulator::write(CAMData *camData){
 
     // 2. Conversion to voltage/conductance representation
     converter->write(camData);
+
+    // 3. add new mapping
+    mapping->addNewMapping(camData);
+
+    // 4. add write noise
+    writeNoise->addWriteNoise(camData);
+
+    // 5. Data mapping to CAM arrays
+    mapping->write(camData);
 }

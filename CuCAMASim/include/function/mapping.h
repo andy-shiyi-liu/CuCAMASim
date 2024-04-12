@@ -4,12 +4,16 @@
 #include <iostream>
 
 #include "util/config.h"
+#include "util/data.h"
 
-class Mapping {
+
+class  Mapping {
  private:
   const uint32_t rowSize, colSize;
-  uint32_t rowCams = 0, colCams = 0;
+  uint32_t rowCams = (uint32_t)-1, colCams = (uint32_t)-1;
+  uint64_t camSize = (uint64_t)-1;
   double *camData = nullptr, *queryData = nullptr;
+  double checkSize(CAMData *camData);
 
  public:
   Mapping(ArrayConfig *arrayConfig)
@@ -17,6 +21,8 @@ class Mapping {
     std::cout << "in Mapping()" << std::endl;
     std::cout << "Mapping() done" << std::endl;
   }
+  void addNewMapping(CAMData *camData);
+  double write(CAMData *camData);
   ~Mapping() {
     if (camData != nullptr) {
       delete[] camData;
