@@ -131,7 +131,7 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
       currentNode = parentNode;
     }
   }
-  assert(camArray->checkDim() && "CAMArray dimensions do not match");
+  assert(camArray->isDimMatch() && "CAMArray dimensions do not match");
   return camArray;
 };
 

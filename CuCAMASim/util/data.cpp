@@ -100,27 +100,78 @@ void ACAMArray::initData() {
 }
 
 void CAMData::initData(CAMArray* camArray) {
-  uint64_t nElem = rowCams * colCams;
-  this->camArrays = new CAMArray *[nElem];
-  for (uint64_t i = 0; i < nElem; i++){
-    this->camArrays[i] =nullptr;
+  uint64_t nElem = _rowCams * _colCams;
+  this->camArrays = new CAMArray*[nElem];
+  for (uint64_t i = 0; i < nElem; i++) {
+    this->camArrays[i] = nullptr;
   }
   camArray->getType();
   throw std::runtime_error("Not implemented");
 }
 
 void ACAMData::initData(ACAMArray* acamArray) {
-  uint64_t nElem = rowCams * colCams;
-  this->camArrays = new ACAMArray *[nElem];
+  uint64_t nElem = _rowCams * _colCams;
+  this->camArrays = new ACAMArray*[nElem];
+
+  // check data size validity
   uint32_t nRows = acamArray->getNRows(), nCols = acamArray->getNCols();
+  if (nRows > _rowSize * _rowCams || nCols > _colSize * _colCams) {
+    throw std::runtime_error("Data size exceeds the total CAM size");
+  }
+
+  // create and init subarrays
+  for (uint64_t i = 0; i < nElem; i++) {
+    this->camArrays[i] = new ACAMArray(_rowSize, _colSize);
+    this->camArrays[i]->initData();
+  }
+
+  // copy data from acamArray to subarrays
   for (uint32_t i = 0; i < nRows; i++) {
     for (uint32_t j = 0; j < nCols; j++) {
-      uint32_t camRowIdx = i / rowCams, camColIdx = j / colCams;
-      uint32_t subArrayRowIdx = i % rowCams, subArrayColIdx = j % colCams;
-      double lowerBd = acamArray->at(i,j,0), upperBd = acamArray->at(i,j,1);
-      at(camRowIdx, camColIdx)->set(subArrayRowIdx, subArrayColIdx, 0, lowerBd);
-      at(camRowIdx, camColIdx)->set(subArrayRowIdx, subArrayColIdx, 1, upperBd);
+      uint32_t camRowIdx = i / _rowSize, camColIdx = j / _colSize;
+      uint32_t subArrayRowIdx = i % _rowSize, subArrayColIdx = j % _colSize;
+      double lowerBd = acamArray->at(i, j, 0), upperBd = acamArray->at(i, j, 1);
+      ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
+      targetSubarray->set(subArrayRowIdx, subArrayColIdx, 0, lowerBd);
+      targetSubarray->set(subArrayRowIdx, subArrayColIdx, 1, upperBd);
     }
+  }
+
+  // set row2classID for each subarray
+  for (uint32_t i = 0; i < nRows; i++) {
+    uint32_t camRowIdx = i / _rowSize;
+    for (uint32_t camColIdx = 0; camColIdx < _colCams; camColIdx++) {
+      ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
+      targetSubarray->row2classID.push_back(acamArray->row2classID[i]);
+    }
+  }
+  for (uint64_t i = nRows; i < _rowCams * _rowSize; i++) {
+    uint32_t camRowIdx = i / _rowSize;
+    for (uint32_t camColIdx = 0; camColIdx < _colCams; camColIdx++) {
+      ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
+      targetSubarray->row2classID.push_back((uint32_t)-1);
+    }
+  }
+  // set col2featureID for each subarray
+  for (uint32_t j = 0; j < nCols; j++) {
+    uint32_t camColIdx = j / _colSize;
+    for (uint32_t camRowIdx = 0; camRowIdx < _rowCams; camRowIdx++) {
+      ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
+      targetSubarray->col2featureID.push_back(acamArray->col2featureID[j]);
+    }
+  }
+  for (uint64_t j = nCols; j < _colCams * _colSize; j++) {
+    uint32_t camColIdx = j / _colSize;
+    for (uint32_t camRowIdx = 0; camRowIdx < _rowCams; camRowIdx++) {
+      ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
+      targetSubarray->col2featureID.push_back((uint32_t)-1);
+    }
+  }
+  for (uint64_t i = 0; i < nElem; i++) {
+    assert(camArrays[i]->getType() == ACAM_ARRAY_COLD_START);
+    camArrays[i]->toCSV("/workspaces/CuCAMASim/subarray" + std::to_string(i) +
+                        ".csv");
+    assert(camArrays[i]->isDimMatch());
   }
   type = ACAM_DATA_COLD_START;
 }

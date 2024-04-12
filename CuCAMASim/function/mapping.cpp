@@ -48,7 +48,7 @@ double Mapping::write(CAMArrayBase *camArray) {
 
   double camUsage = checkSize(camArray);
   if (camArray->getType() == ACAM_ARRAY_COLD_START || camArray->getType() == ACAM_ARRAY_EXISTING_DATA) {
-    camData = new ACAMData(rowCams, colCams);
+    camData = new ACAMData(rowCams, colCams, rowSize, colSize);
     camData->initData(camArray);
     assert(camData->getType() == ACAM_DATA_COLD_START);
   } else {
