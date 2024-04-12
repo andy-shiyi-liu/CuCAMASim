@@ -11,16 +11,17 @@
 #include <map>
 #include <vector>
 
-enum CAMDataType {
-  CAM_DATA,
-  ACAM_DATA,
-  INVALID_CAMDATA
-};
+enum CAMDataType { CAM_DATA, ACAM_DATA, INVALID_CAMDATA };
 
 class Data {};
 
 class CAMData : public Data {
  private:
+  virtual inline void checkDataValid() {
+    assert(type == CAM_DATA &&
+           "self data type is not CAM_DATA, have you initialized the data by "
+           "initData()?");
+  }
 
  protected:
   CAMDataType type = INVALID_CAMDATA;
@@ -32,38 +33,45 @@ class CAMData : public Data {
   double _min = +std::numeric_limits<double>::infinity(),
          _max = -std::numeric_limits<double>::infinity();
   double *data = nullptr;
+  virtual inline void updateMinMax(double val) {
+    if (!std::isnan(val)) {
+      _min = std::min(_min, val);
+      _max = std::max(_max, val);
+    }
+  }
 
  public:
   std::vector<double> col2featureID;
   std::vector<double> row2classID;
 
   CAMData(uint32_t nRows, uint32_t nCols) {
-    type = CAM_DATA;
     dim.nRows = nRows;
     dim.nCols = nCols;
-    dim.nBoundaries = 2;
+    dim.nBoundaries = 1;
+  };
+  virtual void initData() {
+    type = CAM_DATA;
     uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
     this->data = new double[nElem];
-    for (uint32_t i = 0; i < nRows; i++) {
-      for (uint32_t j = 0; j < nCols; j++) {
-        set(i, j, 0, -std::numeric_limits<double>::infinity());
-        set(i, j, 1, +std::numeric_limits<double>::infinity());
+    for (uint32_t i = 0; i < dim.nRows; i++) {
+      for (uint32_t j = 0; j < dim.nCols; j++) {
+        set(i, j, std::numeric_limits<float>::quiet_NaN());
       }
     }
-  };
-  double at(int rowNum, int colNum, int bdNum) {
-    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+  }
+  virtual inline double at(int rowNum, int colNum) {
+    checkDataValid();
+    int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
     return data[index];
   }
-  void set(int rowNum, int colNum, int bdNum, double val) {
-    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+  virtual inline void set(int rowNum, int colNum, double val) {
+    checkDataValid();
+    int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
     data[index] = val;
-    if (!std::isinf(val)) {
-      _min = std::min(_min, val);
-      _max = std::max(_max, val);
-    }
+    updateMinMax(val);
   }
-  bool checkDim() {
+
+  inline bool checkDim() {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
   }
   void printDim() {
@@ -71,7 +79,65 @@ class CAMData : public Data {
     std::cout << "nCols: " << dim.nCols << std::endl;
     std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
   }
-  void toCSV(const std::filesystem::path &outputPath) {
+
+  inline double min() { return _min; }
+  inline double max() { return _max; }
+  inline CAMDataType getType() { return type; }
+
+  inline uint32_t getNRows() { return dim.nRows; }
+  inline uint32_t getNCols() { return dim.nCols; }
+
+  virtual ~CAMData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
+};
+
+class ACAMData : public CAMData {
+ private:
+ inline void checkDataValid() override {
+    assert(type == ACAM_DATA &&
+           "self data type is not ACAM_DATA, have you initialized the data by "
+           "initData()?");
+  }
+ public:
+  void initData() override {
+    type = ACAM_DATA;
+    assert(dim.nBoundaries == 2);
+    uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
+    this->data = new double[nElem];
+    for (uint32_t i = 0; i < dim.nRows; i++) {
+      for (uint32_t j = 0; j < dim.nCols; j++) {
+        set(i, j, 0, -std::numeric_limits<double>::infinity());
+        set(i, j, 1, +std::numeric_limits<double>::infinity());
+      }
+    }
+  }
+  ACAMData(uint32_t nRows, uint32_t nCols) : CAMData(nRows, nCols) {
+    dim.nBoundaries = 2;
+  }
+  inline void set(int rowNum, int colNum, double val) override {
+    assert(0 && rowNum && colNum && val &&
+           "boundary number is needed for ACAMData");
+  }
+  inline void set(int rowNum, int colNum, int bdNum, double val) {
+    checkDataValid();
+    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+    data[index] = val;
+    updateMinMax(val);
+  }
+  inline double at(int rowNum, int colNum) override {
+    checkDataValid();
+    assert(0 && rowNum && colNum && "boundary number is needed for ACAMData");
+  }
+  inline double at(int rowNum, int colNum, int bdNum) {
+    checkDataValid();
+    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+    return data[index];
+  }
+  inline void toCSV(const std::filesystem::path &outputPath) {
     toCSV(outputPath, ",");
   }
   void toCSV(const std::filesystem::path &outputPath, std::string sep) {
@@ -91,25 +157,11 @@ class CAMData : public Data {
     }
     file.close();
   }
-  double min() { return _min; }
-  double max() { return _max; }
-  CAMDataType getType() { return type; }
-
-  uint32_t getNRows() { return dim.nRows; }
-  uint32_t getNCols() { return dim.nCols; }
-
-  ~CAMData() {
-    if (data != nullptr) {
-      delete[] data;
-      data = nullptr;
+  inline void updateMinMax(double val) override {
+    if (!std::isinf(val)) {
+      _min = std::min(_min, val);
+      _max = std::max(_max, val);
     }
-  };
-};
-
-class ACAMData : public CAMData {
- public:
-  ACAMData(uint32_t nRows, uint32_t nCols) : CAMData(nRows, nCols) {
-    type = ACAM_DATA;
   }
 };
 

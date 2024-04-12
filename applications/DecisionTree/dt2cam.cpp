@@ -89,6 +89,7 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
 
 ACAMData* DecisionTree::tree2camThresholdArray() {
   ACAMData* camData = new ACAMData(leafNodes.size(), featureIDs.size());
+  camData->initData();
   std::sort(featureIDs.begin(), featureIDs.end());
 
   for (uint64_t featureID : featureIDs) {

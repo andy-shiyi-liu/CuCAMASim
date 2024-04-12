@@ -142,7 +142,6 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 // Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
 // voltage representation.
 void ConvertToPhys::write(CAMData *camData) {
-  camData->at(0, 0, 0);
   if (cell == "ACAM") {
     if (camData->getType() != ACAM_DATA) {
       throw std::runtime_error("ERROR: CAMData type should be ACAM_DATA");

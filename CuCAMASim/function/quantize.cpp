@@ -3,7 +3,7 @@
 
 // directly modify camData to add quantization
 void Quantize::write(CAMData* camData){
-    camData->at(0,0,0);
+    camData->getType();
     // throw an not implemented error
     throw std::runtime_error("Quantize::write() not implemented");
 }
