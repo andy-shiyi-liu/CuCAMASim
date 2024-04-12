@@ -42,8 +42,8 @@ mapping:
     minConvertConductance: 10
     lineConvertRangeMin: -0.1
     lineConvertRangeMax: 1.1
-    queryClipRangeMin: -0.1
-    queryClipRangeMax: 1.1
+    queryClipRangeMin: 0.2
+    queryClipRangeMax: 0.8
   expandConductanceAll:
     strategy: "fixed size"
     expandSize: 0

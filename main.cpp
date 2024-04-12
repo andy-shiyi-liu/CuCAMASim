@@ -11,7 +11,8 @@
 Dataset* loadDataset(std::string datasetName){
   std::cout << "Loading dataset: " << datasetName << std::endl;
   std::map<std::string, std::filesystem::path> datasetPath = {
-    {"BTSC_adapted_rand", "/workspaces/CuCAMASim/dataset/BTSC/rand/300train_100validation_-1test.mat"}
+    {"BTSC_adapted_rand", "/workspaces/CuCAMASim/dataset/BTSC/rand/300train_100validation_-1test.mat"},
+    {"test", "/workspaces/CuCAMASim/dataset/test/test.mat"}
   };
   Dataset *dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
@@ -30,6 +31,7 @@ int main() {
   camArray->toCSV("/workspaces/CuCAMASim/camArray_beforeConvert.csv");
 
   Dataset *dataset = loadDataset("BTSC_adapted_rand");
+  // Dataset *dataset = loadDataset("test");
   dataset->testInputs->toCSV("/workspaces/CuCAMASim/testInputs.csv");
   dataset->testLabels->toCSV("/workspaces/CuCAMASim/testLabels.csv");
   dataset->trainInputs->toCSV("/workspaces/CuCAMASim/trainInputs.csv");

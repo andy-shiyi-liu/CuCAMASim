@@ -188,28 +188,40 @@ void ConvertToPhys::acamN2V(ACAMArray *camArray) const {
       if (std::isinf(camArray->at(i, j, 0))) {
         camArray->set(i, j, 0, VbdMin);
       } else {
-        camArray->set(i, j, 0,
-                     num2Vbd<double>(camArray->at(i, j, 0), lineConvertRangeMin,
-                                     lineConvertRangeMax, VbdMin, VbdMax));
+        camArray->set(
+            i, j, 0,
+            num2Vbd<double>(camArray->at(i, j, 0), lineConvertRangeMin,
+                            lineConvertRangeMax, VbdMin, VbdMax));
       }
       if (std::isinf(camArray->at(i, j, 1))) {
         camArray->set(i, j, 1, VbdMax);
       } else {
-        camArray->set(i, j, 1,
-                     num2Vbd<double>(camArray->at(i, j, 1), lineConvertRangeMin,
-                                     lineConvertRangeMax, VbdMin, VbdMax));
+        camArray->set(
+            i, j, 1,
+            num2Vbd<double>(camArray->at(i, j, 1), lineConvertRangeMin,
+                            lineConvertRangeMax, VbdMin, VbdMax));
       }
     }
   }
   return;
 }
 
-// Converts data to a physical representation suitable for query operations.
-// Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
-// voltage representation.
+// Converts numerical input vector or value to the correct voltage used in CAM
+// for search. Args:
+//     input: Numerical input data for conversion.
+// Returns the input converted to the appropriate voltage for CAM search
+// operations (Vsl).
 void ConvertToPhys::query(InputData *inputData) const {
   inputData->getNFeatures();
-  std::cerr
-      << "\033[33mWARNING: ConvertToPhys::query() is still under development\033[0m"
-      << std::endl;
+
+  if (cell == "ACAM") {
+    inputData->clip(queryClipRangeMin, queryClipRangeMax);
+    for (uint64_t i = 0; i < inputData->getNVectors(); i++) {
+      for (uint64_t j = 0; j < inputData->getNFeatures(); j++) {
+        inputData->set(i, j,
+                       num2Vbd<double>(inputData->at(i, j), lineConvertRangeMin,
+                                       lineConvertRangeMax, VbdMin, VbdMax));
+      }
+    }
+  }
 }

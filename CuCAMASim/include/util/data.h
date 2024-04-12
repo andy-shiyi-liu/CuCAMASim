@@ -250,7 +250,6 @@ class CAMDataBase : public Data {
   virtual ~CAMDataBase(){};
 };
 
-
 // CAM data with multiple sub-arrays
 class CAMData : public CAMDataBase {
  protected:
@@ -332,9 +331,9 @@ class QueryData : public Data {
   double &at(int vecNum, int featureNum) {
     return data[featureNum + dim.nFeatures * vecNum];
   }
-  
-  inline uint32_t getNVectors() const {return dim.nVectors;}
-  inline uint32_t getNFeatures() const {return dim.nFeatures;}
+
+  inline uint32_t getNVectors() const { return dim.nVectors; }
+  inline uint32_t getNFeatures() const { return dim.nFeatures; }
 
   ~QueryData() {
     if (data != nullptr) {
@@ -359,15 +358,25 @@ class InputData : public Data {
     dim.nFeatures = nFeatures;
     this->data = data;
   }
-  inline double &at(int vecNum, int featureNum) const  {
+  inline void set(int vecNum, int featureNum, double val) {
+    data[featureNum + dim.nFeatures * vecNum] = val;
+  };
+  inline double at(int vecNum, int featureNum) const {
     return data[featureNum + dim.nFeatures * vecNum];
   }
+
   void toCSV(const std::filesystem::path &outputPath) const {
     toCSV(outputPath, ",");
   }
   void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
     std::ofstream file(outputPath);
+    file << sep;
+    for (uint32_t i = 0; i < dim.nFeatures; i++) {
+      file << i << sep;
+    }
+    file << std::endl;
     for (uint32_t i = 0; i < dim.nVectors; i++) {
+      file << i << sep;
       for (uint32_t j = 0; j < dim.nFeatures; j++) {
         file << at(i, j) << sep;
       }
@@ -376,8 +385,10 @@ class InputData : public Data {
     file.close();
   }
 
-  inline uint32_t getNVectors() const {return dim.nVectors;}
-  inline uint32_t getNFeatures() const {return dim.nFeatures;}
+  void clip(double min, double max);
+
+  inline uint32_t getNVectors() const { return dim.nVectors; }
+  inline uint32_t getNFeatures() const { return dim.nFeatures; }
 
   ~InputData() {
     if (data != nullptr) {
@@ -400,18 +411,18 @@ class LabelData : public Data {
     dim.nVectors = nVectors;
     this->data = data;
   }
-  void toCSV(const std::filesystem::path &outputPath)const  {
+  void toCSV(const std::filesystem::path &outputPath) const {
     toCSV(outputPath, ",");
   }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep)const  {
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
     std::ofstream file(outputPath);
     for (uint32_t i = 0; i < dim.nVectors; i++) {
       file << at(i) << sep;
     }
     file.close();
   }
-  inline uint64_t &at(int vecNum) const { return data[vecNum]; }
-  inline uint32_t getNVectors() const {return dim.nVectors;}
+  inline uint64_t at(int vecNum) const { return data[vecNum]; }
+  inline uint32_t getNVectors() const { return dim.nVectors; }
   ~LabelData() {
     if (data != nullptr) {
       delete[] data;

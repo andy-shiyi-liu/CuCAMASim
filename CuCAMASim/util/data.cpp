@@ -1,5 +1,6 @@
 #include "util/data.h"
 
+
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -16,8 +17,8 @@ double* loadInputMatrix(mat_t* matfp, const char* variableName, size_t& rows,
   if (matvar->data_type != MAT_T_DOUBLE)
     throw std::runtime_error("Data type mismatch");
 
-  rows = matvar->dims[0];
-  cols = matvar->dims[1];
+  rows = matvar->dims[1];
+  cols = matvar->dims[0];
   size_t nElem = rows * cols;
   double* data = new double[nElem];
   memcpy(data, matvar->data, nElem * sizeof(double));
@@ -73,6 +74,19 @@ void Dataset::loadDataset(std::filesystem::path datasetPath) {
   // Load TestLabels
   uint64_t* testLabelsData = loadLabelMatrix(matfp, "testLabels", nVectors);
   this->testLabels = new LabelData(nVectors, testLabelsData);
+}
+
+void InputData::clip(double min, double max) {
+  for (uint64_t i = 0; i < dim.nVectors; i++) {
+    for (uint64_t j = 0; j < dim.nFeatures; j++) {
+      double val = at(i, j);
+      if (val < min) {
+        set(i, j, min);
+      } else if (val > max) {
+        set(i, j, max);
+      }
+    }
+  }
 }
 
 void CAMArray::initData() {
