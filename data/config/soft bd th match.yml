@@ -30,7 +30,7 @@ cell:
         stdDev: 3        # uS, the standard deviation of the gaussian distribution
 query:
   FuncSim: true
-  PerfEval: true
+  PerfEval: false
   bit: *bit
   distance: softRange
   distanceParameter: 100

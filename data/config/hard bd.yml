@@ -30,7 +30,7 @@ cell:
         type: bounded_gaussian
 query:
   FuncSim: true
-  PerfEval: true
+  PerfEval: false
   bit: 3
   distance: range
   distanceParameter: 1000

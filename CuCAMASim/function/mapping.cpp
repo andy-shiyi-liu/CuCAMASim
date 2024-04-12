@@ -54,9 +54,6 @@ double Mapping::write(CAMArrayBase *camArray) {
   } else {
     throw std::runtime_error("Write data other than ACAM is not supported yet");
   }
-
-  std::cerr
-      << "\033[33mWARNING: Mapping::write() is still under development!\033[0m"
-      << std::endl;
+  
   return camUsage;
 }
