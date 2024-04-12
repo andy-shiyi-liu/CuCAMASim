@@ -141,14 +141,14 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 // Converts data to a physical representation suitable for write operations.
 // Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
 // voltage representation.
-void ConvertToPhys::write(CAMArray *camData) {
+void ConvertToPhys::write(CAMArray *camArray) {
   if (cell == "ACAM") {
-    if (camData->getType() != ACAM_ARRAY) {
+    if (camArray->getType() != ACAM_ARRAY_COLD_START) {
       throw std::runtime_error("ERROR: CAMArray type should be ACAM_ARRAY");
     }
-    ACAMArray *acamData = static_cast<ACAMArray *>(camData);
-    double boundaryMin = acamData->min();
-    double boundaryMax = acamData->max();
+    ACAMArray *acamArray = static_cast<ACAMArray *>(camArray);
+    double boundaryMin = acamArray->min();
+    double boundaryMax = acamArray->max();
 
     assert(boundaryMin < boundaryMax &&
            "ERROR: boundaryMin should be smaller than boundaryMax");
@@ -174,29 +174,29 @@ void ConvertToPhys::write(CAMArray *camData) {
     if (std::isnan(queryClipRangeMax)) {
       queryClipRangeMax = boundaryMax + queryClipRangeMargin * Nrange;
     }
-    acamN2V(acamData);
+    acamN2V(acamArray);
   } else {
     throw std::runtime_error(
         "Cell types other than ACAM are not implemented yet");
   }
 }
 
-// convert the data in camData from numerical to voltage representation.
-void ConvertToPhys::acamN2V(ACAMArray *camData) {
-  for (uint32_t i = 0; i < camData->getNRows(); i++) {
-    for (uint32_t j = 0; j < camData->getNCols(); j++) {
-      if (std::isinf(camData->at(i, j, 0))) {
-        camData->set(i, j, 0, VbdMin);
+// convert the data in camArray from numerical to voltage representation.
+void ConvertToPhys::acamN2V(ACAMArray *camArray) {
+  for (uint32_t i = 0; i < camArray->getNRows(); i++) {
+    for (uint32_t j = 0; j < camArray->getNCols(); j++) {
+      if (std::isinf(camArray->at(i, j, 0))) {
+        camArray->set(i, j, 0, VbdMin);
       } else {
-        camData->set(i, j, 0,
-                     num2Vbd<double>(camData->at(i, j, 0), lineConvertRangeMin,
+        camArray->set(i, j, 0,
+                     num2Vbd<double>(camArray->at(i, j, 0), lineConvertRangeMin,
                                      lineConvertRangeMax, VbdMin, VbdMax));
       }
-      if (std::isinf(camData->at(i, j, 1))) {
-        camData->set(i, j, 1, VbdMax);
+      if (std::isinf(camArray->at(i, j, 1))) {
+        camArray->set(i, j, 1, VbdMax);
       } else {
-        camData->set(i, j, 1,
-                     num2Vbd<double>(camData->at(i, j, 1), lineConvertRangeMin,
+        camArray->set(i, j, 1,
+                     num2Vbd<double>(camArray->at(i, j, 1), lineConvertRangeMin,
                                      lineConvertRangeMax, VbdMin, VbdMax));
       }
     }

@@ -21,13 +21,13 @@ Dataset* loadDataset(std::string datasetName){
 int main() {
   std::cout << "hello world!" << std::endl;
   DecisionTree dt("/workspaces/CuCAMASim/data/treeText/exampleTreeText.txt");
-  ACAMArray *camData = dt.toACAM();
+  ACAMArray *camArray = dt.toACAM();
   std::cout << "Original TreeText:" << std::endl;
   dt.printTreeText();
   std::cout << "Exported TreeText:" << std::endl;
   dt.printTree();
-  camData->printDim();
-  camData->toCSV("/workspaces/CuCAMASim/camData_beforeConvert.csv");
+  camArray->printDim();
+  camArray->toCSV("/workspaces/CuCAMASim/camArray_beforeConvert.csv");
 
   Dataset *dataset = loadDataset("BTSC_adapted_rand");
   dataset->testInputs->toCSV("/workspaces/CuCAMASim/testInputs.csv");
@@ -38,9 +38,9 @@ int main() {
   CamConfig camConfig("/workspaces/CuCAMASim/data/config/hard bd.yml");
   CuCAMASim camasim(&camConfig);
 
-  camasim.write(camData);
+  camasim.write(camArray);
 
-  camData->toCSV("/workspaces/CuCAMASim/camData_afterConvert.csv");
+  camArray->toCSV("/workspaces/CuCAMASim/camArray_afterConvert.csv");
 
   if(dataset!= nullptr){
     delete dataset;

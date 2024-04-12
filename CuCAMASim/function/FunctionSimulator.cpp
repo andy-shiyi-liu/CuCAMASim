@@ -5,21 +5,21 @@
 #include "function/cuda/distance.cuh"
 #include "util/data.h"
 
-void FunctionSimulator::write(CAMArray *camData){
+void FunctionSimulator::write(CAMArray *camArray){
     // 1. Quantization (optional for ACAM)
     if (camConfig->arrayConfig->cell != "ACAM"){
-        quantizer->write(camData);
+        quantizer->write(camArray);
     }
 
     // 2. Conversion to voltage/conductance representation
-    converter->write(camData);
+    converter->write(camArray);
 
     // 3. add new mapping
-    mapping->addNewMapping(camData);
+    mapping->addNewMapping(camArray);
 
     // 4. add write noise
-    writeNoise->addWriteNoise(camData);
+    writeNoise->addWriteNoise(camArray);
 
     // 5. Data mapping to CAM arrays
-    mapping->write(camData);
+    mapping->write(camArray);
 }

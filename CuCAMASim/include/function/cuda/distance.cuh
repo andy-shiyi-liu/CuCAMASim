@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include "util/data.h"
 
-extern "C" double* rangeQueryPairwise(ACAMArray *camData, QueryData *queryData);
-extern "C" double* softRangePairwise(ACAMArray *camData, QueryData *queryData);
+extern "C" double* rangeQueryPairwise(ACAMArray *camArray, QueryData *queryData);
+extern "C" double* softRangePairwise(ACAMArray *camArray, QueryData *queryData);
 
 #endif

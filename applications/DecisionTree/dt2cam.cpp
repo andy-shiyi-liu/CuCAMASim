@@ -88,17 +88,17 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
 };
 
 ACAMArray* DecisionTree::tree2camThresholdArray() {
-  ACAMArray* camData = new ACAMArray(leafNodes.size(), featureIDs.size());
-  camData->initData();
+  ACAMArray* camArray = new ACAMArray(leafNodes.size(), featureIDs.size());
+  camArray->initData();
   std::sort(featureIDs.begin(), featureIDs.end());
 
   for (uint64_t featureID : featureIDs) {
-    camData->col2featureID.push_back(featureID);
+    camArray->col2featureID.push_back(featureID);
   }
 
   for (LeafNode* leafNode : leafNodes) {
     TreeNode* currentNode = leafNode;
-    camData->row2classID.push_back(leafNode->getClassID());
+    camArray->row2classID.push_back(leafNode->getClassID());
     while (currentNode->getParent() != nullptr) {
       // assert that parentNode is a StemNode
       assert(currentNode->getParent()->getType() == STEM_NODE);
@@ -112,33 +112,33 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
         boundaryID = 0;
       }
       double threshold = parentNode->getThreshold();
-      uint64_t rowID = camData->row2classID.size() - 1;
+      uint64_t rowID = camArray->row2classID.size() - 1;
       auto it = std::find(featureIDs.begin(), featureIDs.end(), featureID);
       assert(it != featureIDs.end() && "featureID not found in featureIDs");
       uint64_t colID = std::distance(featureIDs.begin(), it);
-      if (std::isinf(camData->at(rowID, colID, boundaryID))) {
-        camData->set(rowID, colID, boundaryID, threshold);
+      if (std::isinf(camArray->at(rowID, colID, boundaryID))) {
+        camArray->set(rowID, colID, boundaryID, threshold);
       } else {
         if (boundaryID == 0) {
-          camData->set(rowID, colID, boundaryID,
-              std::max(camData->at(rowID, colID, boundaryID), threshold));
+          camArray->set(rowID, colID, boundaryID,
+              std::max(camArray->at(rowID, colID, boundaryID), threshold));
         } else {
           assert(boundaryID == 1);
-          camData->set(rowID, colID, boundaryID,
-              std::min(camData->at(rowID, colID, boundaryID), threshold));
+          camArray->set(rowID, colID, boundaryID,
+              std::min(camArray->at(rowID, colID, boundaryID), threshold));
         }
       }
       currentNode = parentNode;
     }
   }
-  assert(camData->checkDim() && "CAMArray dimensions do not match");
-  return camData;
+  assert(camArray->checkDim() && "CAMArray dimensions do not match");
+  return camArray;
 };
 
 ACAMArray* DecisionTree::toACAM() {
   parseTreeText();
-  ACAMArray* camData = tree2camThresholdArray();
-  return camData;
+  ACAMArray* camArray = tree2camThresholdArray();
+  return camArray;
 };
 
 void DecisionTree::printTree() {

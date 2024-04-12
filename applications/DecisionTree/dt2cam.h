@@ -81,7 +81,7 @@ class StemNode : public TreeNode {
 class DecisionTree {
  private:
   std::vector<std::string> treeText;
-  ACAMArray *camData = nullptr;
+  ACAMArray *camArray = nullptr;
   std::list<LeafNode *> leafNodes;
   std::vector<uint64_t> featureIDs;
   std::list<uint64_t> classIDs;

@@ -25,7 +25,7 @@ class WriteNoise {
     std::cout << "in WriteNoise()" << std::endl;
     std::cout << "WriteNoise() done" << std::endl;
   }
-  void addWriteNoise(CAMArray *camData);
+  void addWriteNoise(CAMArray *camArray);
 };
 
 #endif  // WRITE_NOISE_H

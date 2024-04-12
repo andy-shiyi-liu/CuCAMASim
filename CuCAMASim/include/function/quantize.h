@@ -16,7 +16,7 @@ class Quantize {
     std::cout << "in Quantize()" << std::endl;
     std::cout << "Quantize() done" << std::endl;
   }
-  void write(CAMArray* camData);
+  void write(CAMArray* camArray);
 };
 
 #endif

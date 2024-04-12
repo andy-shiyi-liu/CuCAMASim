@@ -76,7 +76,7 @@ void Dataset::loadDataset(std::filesystem::path datasetPath) {
 }
 
 void CAMArray::initData() {
-  type = CAM_ARRAY;
+  type = CAM_ARRAY_COLD_START;
   uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
   this->data = new double[nElem];
   for (uint32_t i = 0; i < dim.nRows; i++) {
@@ -84,4 +84,36 @@ void CAMArray::initData() {
       set(i, j, std::numeric_limits<float>::quiet_NaN());
     }
   }
+}
+
+void ACAMArray::initData() {
+  type = ACAM_ARRAY_COLD_START;
+  assert(dim.nBoundaries == 2);
+  uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
+  this->data = new double[nElem];
+  for (uint32_t i = 0; i < dim.nRows; i++) {
+    for (uint32_t j = 0; j < dim.nCols; j++) {
+      set(i, j, 0, -std::numeric_limits<double>::infinity());
+      set(i, j, 1, +std::numeric_limits<double>::infinity());
+    }
+  }
+}
+
+void CAMData::initData(CAMArray* camArray) {
+  camArray->getType();
+  throw std::runtime_error("Not implemented");
+}
+
+void ACAMData::initData(ACAMArray* acamArray) {
+  uint32_t nRows = acamArray->getNRows(), nCols = acamArray->getNCols();
+  for (uint32_t i = 0; i < nRows; i++) {
+    for (uint32_t j = 0; j < nCols; j++) {
+      uint32_t camRowIdx = i / rowCams, camColIdx = j / colCams;
+      uint32_t subArrayRowIdx = i % rowCams, subArrayColIdx = j % colCams;
+      double lowerBd = acamArray->at(i,j,0), upperBd = acamArray->at(i,j,1);
+      at(camRowIdx, camColIdx)->set(subArrayRowIdx, subArrayColIdx, 0, lowerBd);
+      at(camRowIdx, camColIdx)->set(subArrayRowIdx, subArrayColIdx, 1, upperBd);
+    }
+  }
+  type = ACAM_DATA_COLD_START;
 }
