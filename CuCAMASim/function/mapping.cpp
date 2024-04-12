@@ -57,3 +57,10 @@ double Mapping::write(CAMArrayBase *camArray) {
   
   return camUsage;
 }
+
+void Mapping::query(InputData *inputData) const{
+  std::cerr << "\033[33mWARNING: Mapping::query() is not implemented yet\033[0m"
+            << std::endl;
+  inputData->getNFeatures();
+  return;
+}

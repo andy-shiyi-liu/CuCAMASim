@@ -250,6 +250,7 @@ class CAMDataBase : public Data {
   virtual ~CAMDataBase(){};
 };
 
+
 // CAM data with multiple sub-arrays
 class CAMData : public CAMDataBase {
  protected:
@@ -331,6 +332,10 @@ class QueryData : public Data {
   double &at(int vecNum, int featureNum) {
     return data[featureNum + dim.nFeatures * vecNum];
   }
+  
+  inline uint32_t getNVectors() const {return dim.nVectors;}
+  inline uint32_t getNFeatures() const {return dim.nFeatures;}
+
   ~QueryData() {
     if (data != nullptr) {
       delete[] data;
@@ -354,13 +359,13 @@ class InputData : public Data {
     dim.nFeatures = nFeatures;
     this->data = data;
   }
-  double &at(int vecNum, int featureNum) {
+  inline double &at(int vecNum, int featureNum) const  {
     return data[featureNum + dim.nFeatures * vecNum];
   }
-  void toCSV(const std::filesystem::path &outputPath) {
+  void toCSV(const std::filesystem::path &outputPath) const {
     toCSV(outputPath, ",");
   }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep) {
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
     std::ofstream file(outputPath);
     for (uint32_t i = 0; i < dim.nVectors; i++) {
       for (uint32_t j = 0; j < dim.nFeatures; j++) {
@@ -370,6 +375,10 @@ class InputData : public Data {
     }
     file.close();
   }
+
+  inline uint32_t getNVectors() const {return dim.nVectors;}
+  inline uint32_t getNFeatures() const {return dim.nFeatures;}
+
   ~InputData() {
     if (data != nullptr) {
       delete[] data;
@@ -391,17 +400,18 @@ class LabelData : public Data {
     dim.nVectors = nVectors;
     this->data = data;
   }
-  void toCSV(const std::filesystem::path &outputPath) {
+  void toCSV(const std::filesystem::path &outputPath)const  {
     toCSV(outputPath, ",");
   }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep) {
+  void toCSV(const std::filesystem::path &outputPath, std::string sep)const  {
     std::ofstream file(outputPath);
     for (uint32_t i = 0; i < dim.nVectors; i++) {
       file << at(i) << sep;
     }
     file.close();
   }
-  uint64_t &at(int vecNum) { return data[vecNum]; }
+  inline uint64_t &at(int vecNum) const { return data[vecNum]; }
+  inline uint32_t getNVectors() const {return dim.nVectors;}
   ~LabelData() {
     if (data != nullptr) {
       delete[] data;

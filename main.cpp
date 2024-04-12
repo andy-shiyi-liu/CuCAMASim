@@ -39,13 +39,14 @@ int main() {
   CuCAMASim camasim(&camConfig);
 
   camasim.write(camArray);
-
   camArray->toCSV("/workspaces/CuCAMASim/camArray_afterConvert.csv");
+
+  camasim.query(dataset->testInputs);
 
   if(dataset!= nullptr){
     delete dataset;
   }
 
-  std::cout << "\033[32m" << "main() finished without error" << "\033[0m" << std::endl;
+  std::cout << "\033[1;32m" << "main() finished without error" << "\033[0m" << std::endl;
   return 0;
 }

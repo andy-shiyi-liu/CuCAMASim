@@ -37,6 +37,8 @@ class CuCAMASim {
     std::cout << "CuCAMASim() done" << std::endl;
   };
   void write(CAMArrayBase *camArray);
+  void query(InputData *inputData);
+
   ~CuCAMASim() {
     delete functionSimulator;
     functionSimulator = nullptr;

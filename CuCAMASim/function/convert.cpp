@@ -182,7 +182,7 @@ void ConvertToPhys::write(CAMArrayBase *camArray) {
 }
 
 // convert the data in camArray from numerical to voltage representation.
-void ConvertToPhys::acamN2V(ACAMArray *camArray) {
+void ConvertToPhys::acamN2V(ACAMArray *camArray) const {
   for (uint32_t i = 0; i < camArray->getNRows(); i++) {
     for (uint32_t j = 0; j < camArray->getNCols(); j++) {
       if (std::isinf(camArray->at(i, j, 0))) {
@@ -202,4 +202,14 @@ void ConvertToPhys::acamN2V(ACAMArray *camArray) {
     }
   }
   return;
+}
+
+// Converts data to a physical representation suitable for query operations.
+// Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
+// voltage representation.
+void ConvertToPhys::query(InputData *inputData) const {
+  inputData->getNFeatures();
+  std::cerr
+      << "\033[33mWARNING: ConvertToPhys::query() is still under development\033[0m"
+      << std::endl;
 }

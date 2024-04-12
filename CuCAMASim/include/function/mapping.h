@@ -13,7 +13,7 @@ class  Mapping {
   uint32_t rowCams = (uint32_t)-1, colCams = (uint32_t)-1;
   uint64_t camSize = (uint64_t)-1;
   CAMDataBase *camData = nullptr;
-  double *queryData = nullptr;
+  QueryData *queryData = nullptr;
   double checkSize(CAMArrayBase *camArray);
 
  public:
@@ -22,8 +22,18 @@ class  Mapping {
     std::cout << "in Mapping()" << std::endl;
     std::cout << "Mapping() done" << std::endl;
   }
+
   void addNewMapping(CAMArrayBase *camArray);
   double write(CAMArrayBase *camArray);
+  void query(InputData *inputData) const;
+
+  uint32_t getRowCams() const { return rowCams; }
+  uint32_t getColCams() const { return colCams; }
+  uint32_t getRowSize() const { return rowSize; }
+  uint32_t getColSize() const { return colSize; }
+  const CAMDataBase *getCamData() const { return camData; }
+  const QueryData *getQueryData() const { return queryData; }
+
   ~Mapping() {
     if (camData != nullptr) {
       delete camData;

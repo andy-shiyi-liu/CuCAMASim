@@ -46,6 +46,10 @@ class CAMSearch {
         }
         std::cout << "CAMSearch() done" << std::endl;
     }
+
+    void defineSearchArea(uint32_t rowCams, uint32_t colCams);
+    void search(const CAMDataBase *camArray, const QueryData *queryData);
+
     ~CAMSearch() {}
 };;
 
