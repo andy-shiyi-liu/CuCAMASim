@@ -16,22 +16,17 @@ enum CAMArrayType {
   CAM_ARRAY_EXISTING_DATA,
   ACAM_ARRAY_COLD_START,
   ACAM_ARRAY_EXISTING_DATA,
+  CAM_ARRAY_BASE,
   INVALID_CAMARRAY
 };
 
 class Data {};
 
-// single, coutinuous CAM array
-class CAMArray : public Data {
- private:
-  virtual inline void checkDataValid() const {
-    assert((type == CAM_ARRAY_COLD_START || type == CAM_ARRAY_EXISTING_DATA) &&
-           "self data type is not CAM_ARRAY, have you initialized the data by "
-           "initData()?");
-  }
-
+class CAMArrayBase : public Data {
  protected:
   CAMArrayType type = INVALID_CAMARRAY;
+  virtual inline void checkDataValid() const = 0;
+  virtual void initData() = 0;
   struct CAMArrayDim {
     uint32_t nRows;
     uint32_t nCols;
@@ -40,52 +35,36 @@ class CAMArray : public Data {
   double _min = +std::numeric_limits<double>::infinity(),
          _max = -std::numeric_limits<double>::infinity();
   double *data = nullptr;
-  virtual inline void updateMinMax(double val) {
-    if (!std::isnan(val)) {
-      _min = std::min(_min, val);
-      _max = std::max(_max, val);
-    }
-  }
 
  public:
-  std::vector<double> col2featureID;
-  std::vector<double> row2classID;
-
-  CAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
-           std::vector<double> &col2featureID,
-           std::vector<double> &row2classID) {
+  inline double min() const { return _min; }
+  inline double max() const { return _max; }
+  inline CAMArrayType getType() const { return type; }
+  inline uint32_t getNRows() const { return dim.nRows; }
+  inline uint32_t getNCols() const { return dim.nCols; }
+  CAMArrayBase(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
     dim.nCols = nCols;
-    dim.nBoundaries = 1;
+    dim.nBoundaries = (uint32_t)-1;
+  };
+  CAMArrayBase(uint32_t nRows, uint32_t nCols, double *arrayData,
+               std::vector<double> &col2featureID,
+               std::vector<double> &row2classID) {
+    dim.nRows = nRows;
+    dim.nCols = nCols;
+    dim.nBoundaries = (uint32_t)-1;
     data = arrayData;
-    type = CAM_ARRAY_EXISTING_DATA;
+    type = CAM_ARRAY_BASE;
     this->col2featureID = col2featureID;
     this->row2classID = row2classID;
     checkDim();
-    checkDataValid();
   };
-  CAMArray(uint32_t nRows, uint32_t nCols) {
-    dim.nRows = nRows;
-    dim.nCols = nCols;
-    dim.nBoundaries = 1;
-  };
-  virtual void initData();
-  virtual inline double at(uint32_t rowNum, uint32_t colNum) const {
-    checkDataValid();
-    if (rowNum >= dim.nRows || colNum >= dim.nCols) {
-      return std::numeric_limits<float>::quiet_NaN();
-    } else {
-      uint32_t index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
-      return data[index];
-    }
-  }
-  virtual inline void set(uint32_t rowNum, uint32_t colNum, double val) {
-    assert(rowNum < dim.nRows && colNum < dim.nCols && "Index out of range");
-    checkDataValid();
-    int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
-    data[index] = val;
-    updateMinMax(val);
-  }
+  std::vector<double> col2featureID;
+  std::vector<double> row2classID;
+
+  virtual inline double at(uint32_t rowNum, uint32_t colNum) const = 0;
+  virtual inline void set(uint32_t rowNum, uint32_t colNum, double val) = 0;
+
   inline bool checkDim() const {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
   }
@@ -94,22 +73,62 @@ class CAMArray : public Data {
     std::cout << "nCols: " << dim.nCols << std::endl;
     std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
   }
-  inline double min() const { return _min; }
-  inline double max() const { return _max; }
-  inline CAMArrayType getType() const { return type; }
-  inline uint32_t getNRows() const { return dim.nRows; }
-  inline uint32_t getNCols() const { return dim.nCols; }
-
-  virtual ~CAMArray() {
+  virtual inline void updateMinMax(double val) = 0;
+  virtual ~CAMArrayBase() {
     if (data != nullptr) {
       delete[] data;
       data = nullptr;
     }
+  }
+};
+
+class CAMArray : public CAMArrayBase {
+ private:
+  inline void checkDataValid() const {
+    assert((type == CAM_ARRAY_COLD_START || type == CAM_ARRAY_EXISTING_DATA) &&
+           "self data type is not CAM_ARRAY, have you initialized the data by "
+           "initData()?");
+  }
+
+ public:
+  CAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
+           std::vector<double> &col2featureID, std::vector<double> &row2classID)
+      : CAMArrayBase(nRows, nCols, arrayData, col2featureID, row2classID) {
+    dim.nBoundaries = 1;
+    type = CAM_ARRAY_EXISTING_DATA;
+    checkDim();
+    checkDataValid();
   };
+  CAMArray(uint32_t nRows, uint32_t nCols) : CAMArrayBase(nRows, nCols) {
+    dim.nBoundaries = 1;
+  };
+  void initData() override;
+  inline void updateMinMax(double val) override {
+    if (!std::isnan(val)) {
+      _min = std::min(_min, val);
+      _max = std::max(_max, val);
+    }
+  }
+  inline double at(uint32_t rowNum, uint32_t colNum) const override {
+    checkDataValid();
+    if (rowNum >= dim.nRows || colNum >= dim.nCols) {
+      return std::numeric_limits<float>::quiet_NaN();
+    } else {
+      uint32_t index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
+      return data[index];
+    }
+  }
+  inline void set(uint32_t rowNum, uint32_t colNum, double val) {
+    assert(rowNum < dim.nRows && colNum < dim.nCols && "Index out of range");
+    checkDataValid();
+    int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
+    data[index] = val;
+    updateMinMax(val);
+  }
 };
 
 // single, coutinuous ACAM array
-class ACAMArray : public CAMArray {
+class ACAMArray : public CAMArrayBase {
  private:
   inline void checkDataValid() const override {
     assert(
@@ -123,13 +142,13 @@ class ACAMArray : public CAMArray {
   ACAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
             std::vector<double> &col2featureID,
             std::vector<double> &row2classID)
-      : CAMArray(nRows, nCols, arrayData, col2featureID, row2classID) {
+      : CAMArrayBase(nRows, nCols, arrayData, col2featureID, row2classID) {
     dim.nBoundaries = 2;
     type = ACAM_ARRAY_EXISTING_DATA;
     checkDim();
     checkDataValid();
   }
-  ACAMArray(uint32_t nRows, uint32_t nCols) : CAMArray(nRows, nCols) {
+  ACAMArray(uint32_t nRows, uint32_t nCols) : CAMArrayBase(nRows, nCols) {
     dim.nBoundaries = 2;
   }
   inline void set(uint32_t rowNum, uint32_t colNum, double val) override {
@@ -186,50 +205,79 @@ class ACAMArray : public CAMArray {
 enum CAMDataType { CAM_DATA_COLD_START, ACAM_DATA_COLD_START, INVALID_CAMDATA };
 
 // CAM data with multiple sub-arrays
-class CAMData : public Data {
+class CAMDataBase : public Data {
  protected:
   uint32_t rowCams = (uint32_t)-1, colCams = (uint32_t)-1;
-  CAMArray **camArray = nullptr;
+
   CAMDataType type = INVALID_CAMDATA;
 
  public:
-  CAMData(uint32_t rowCams, uint32_t colCams) {
+  CAMDataBase(uint32_t rowCams, uint32_t colCams) {
     this->rowCams = rowCams;
     this->colCams = colCams;
-    uint64_t nElem = rowCams * colCams;
-    this->camArray = new CAMArray *[nElem];
   };
-  virtual void initData(CAMArray *camArray);
-  virtual inline CAMArray *at(uint32_t rowNum, uint32_t colNum) const {
+  inline CAMDataType getType() const { return type; }
+  virtual void initData(CAMArrayBase *camArray) = 0;
+  virtual ~CAMDataBase(){};
+};
+
+class CAMData : public CAMDataBase {
+ protected:
+  CAMArray **camArrays = nullptr;
+
+ public:
+  CAMData(uint32_t rowCams, uint32_t colCams) : CAMDataBase(rowCams, colCams){};
+
+  void initData(CAMArrayBase *camArray) override {
+    initData(dynamic_cast<CAMArray *>(camArray));
+  };
+  void initData(CAMArray *camArray) ;
+  inline CAMArrayBase *at(uint32_t rowNum, uint32_t colNum) const {
     assert(rowNum < rowCams && colNum < colCams && "Index out of range");
-    return camArray[colNum + colCams * rowNum];
+    return camArrays[colNum + colCams * rowNum];
   }
-  virtual ~CAMData() {
-    if (camArray != nullptr) {
+  ~CAMData() override {
+    if (camArrays != nullptr) {
       for (uint32_t i = 0; i < rowCams * colCams; i++) {
-        if (camArray[i] != nullptr) {
-          delete camArray[i];
-          camArray[i] = nullptr;
+        if (camArrays[i] != nullptr) {
+          delete camArrays[i];
+          camArrays[i] = nullptr;
         }
       }
-      delete[] camArray;
-      camArray = nullptr;
+      delete[] camArrays;
+      camArrays = nullptr;
     }
   };
 };
 
 // ACAM data with multiple sub-arrays
-class ACAMData : public CAMData {
-  public:
-  ACAMData(uint32_t rowCams, uint32_t colCams) : CAMData(rowCams, colCams) {};
-  void initData(CAMArray *camArray)override{
+class ACAMData : public CAMDataBase {
+ protected:
+  ACAMArray **camArrays = nullptr;
+
+ public:
+  ACAMData(uint32_t rowCams, uint32_t colCams)
+      : CAMDataBase(rowCams, colCams){};
+  void initData(CAMArrayBase *camArray) override {
     initData(dynamic_cast<ACAMArray *>(camArray));
   };
-  void initData(ACAMArray *acamArray) ;
-  inline ACAMArray *at(uint32_t rowNum, uint32_t colNum) const override {
+  void initData(ACAMArray *acamArray);
+  inline ACAMArray *at(uint32_t rowNum, uint32_t colNum) const {
     assert(rowNum < rowCams && colNum < colCams && "Index out of range");
-    return dynamic_cast<ACAMArray *>(camArray[colNum + colCams * rowNum]);
+    return this->camArrays[colNum + colCams * rowNum];
   }
+  ~ACAMData() override {
+    if (camArrays != nullptr) {
+      for (uint32_t i = 0; i < rowCams * colCams; i++) {
+        if (camArrays[i] != nullptr) {
+          delete camArrays[i];
+          camArrays[i] = nullptr;
+        }
+      }
+      delete[] camArrays;
+      camArrays = nullptr;
+    }
+  };
 };
 
 class QueryData : public Data {

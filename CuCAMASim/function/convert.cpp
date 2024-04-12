@@ -141,7 +141,7 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 // Converts data to a physical representation suitable for write operations.
 // Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
 // voltage representation.
-void ConvertToPhys::write(CAMArray *camArray) {
+void ConvertToPhys::write(CAMArrayBase *camArray) {
   if (cell == "ACAM") {
     if (camArray->getType() != ACAM_ARRAY_COLD_START) {
       throw std::runtime_error("ERROR: CAMArray type should be ACAM_ARRAY");

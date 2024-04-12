@@ -38,7 +38,7 @@ class ConvertToPhys {
 
  public:
   ConvertToPhys(CellConfig *cellConfig, MappingConfig *mappingConfig);
-  void write(CAMArray *camArray);
+  void write(CAMArrayBase *camArray);
   ~ConvertToPhys() {}
 };
 

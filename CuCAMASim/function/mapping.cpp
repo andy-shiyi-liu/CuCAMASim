@@ -5,7 +5,7 @@
 
 #include "util/data.h"
 
-void Mapping::addNewMapping(CAMArray *camArray) {
+void Mapping::addNewMapping(CAMArrayBase *camArray) {
   std::cerr << "\033[33mWARNING: Mapping::addNewMapping() is not implemented "
                "yet\033[0m"
             << std::endl;
@@ -20,7 +20,7 @@ void Mapping::addNewMapping(CAMArray *camArray) {
 //     camUsage: Fraction of CAM array usage.
 // Raises:
 //     NotImplementedError: If the CAM size is smaller than the dataset size.
-double Mapping::checkSize(CAMArray *camArray) {
+double Mapping::checkSize(CAMArrayBase *camArray) {
   double camUsage = 0.0;
   uint64_t dataSize = camArray->getNRows() * camArray->getNCols();
 
@@ -39,16 +39,18 @@ double Mapping::checkSize(CAMArray *camArray) {
   return camUsage;
 }
 
-double Mapping::write(CAMArray *camArray) {
+double Mapping::write(CAMArrayBase *camArray) {
   uint32_t nRows = camArray->getNRows();
   uint32_t nCols = camArray->getNCols();
 
-  rowCams = std::ceil(nRows / rowSize);
-  colCams = std::ceil(nCols / colSize);
+  rowCams = std::ceil((double)nRows / rowSize);
+  colCams = std::ceil((double)nCols / colSize);
 
   double camUsage = checkSize(camArray);
   if (camArray->getType() == ACAM_ARRAY_COLD_START || camArray->getType() == ACAM_ARRAY_EXISTING_DATA) {
-    // ACAMArray *acamArray = dynamic_cast<ACAMArray *>(camArray);
+    camData = new ACAMData(rowCams, colCams);
+    camData->initData(camArray);
+    assert(camData->getType() == ACAM_DATA_COLD_START);
   } else {
     throw std::runtime_error("Write data other than ACAM is not supported yet");
   }

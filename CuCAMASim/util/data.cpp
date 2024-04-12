@@ -100,11 +100,18 @@ void ACAMArray::initData() {
 }
 
 void CAMData::initData(CAMArray* camArray) {
+  uint64_t nElem = rowCams * colCams;
+  this->camArrays = new CAMArray *[nElem];
+  for (uint64_t i = 0; i < nElem; i++){
+    this->camArrays[i] =nullptr;
+  }
   camArray->getType();
   throw std::runtime_error("Not implemented");
 }
 
 void ACAMData::initData(ACAMArray* acamArray) {
+  uint64_t nElem = rowCams * colCams;
+  this->camArrays = new ACAMArray *[nElem];
   uint32_t nRows = acamArray->getNRows(), nCols = acamArray->getNCols();
   for (uint32_t i = 0; i < nRows; i++) {
     for (uint32_t j = 0; j < nCols; j++) {
