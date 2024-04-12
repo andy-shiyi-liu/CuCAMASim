@@ -18,13 +18,13 @@ endif()
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
 
-add_library(lib_util ${UTIL_DIR})
+add_library(util ${UTIL_DIR})
 # Include directories for matio
-target_link_libraries(lib_util PUBLIC yaml-cpp::yaml-cpp matio)
+target_link_libraries(util PUBLIC yaml-cpp::yaml-cpp matio)
 
 # Treat warnings as errors for C and C++ files
 if(MSVC)
-    target_compile_options(lib_util PRIVATE /W4 /WX)
+    target_compile_options(util PRIVATE /W4 /WX)
 else()
-    target_compile_options(lib_util PRIVATE -Wall -Wextra -Werror)
+    target_compile_options(util PRIVATE -Wall -Wextra -Werror)
 endif()

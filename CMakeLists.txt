@@ -33,16 +33,16 @@ set_target_properties(CuCAMASim_runner PROPERTIES CUDA_ARCHITECTURES 61)
 
 # Linking libraries
 target_link_libraries(CuCAMASim_runner PRIVATE CUDA::cudart)
-target_link_libraries(CuCAMASim_runner PUBLIC lib_CuCAMASim lib_DecisionTree)
+target_link_libraries(CuCAMASim_runner PUBLIC CuCAMASim DecisionTree)
 
 # Link against filesystem library if using GCC version < 9
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
     target_link_libraries(CuCAMASim_runner PRIVATE stdc++fs)
 endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(lib_function_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-G>)
+    target_compile_options(CuCAMASim_runner PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-G>)
 endif()
-set_target_properties(lib_function_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(CuCAMASim_runner PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Treat warnings as errors for C and C++ files
 if(MSVC)

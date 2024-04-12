@@ -18,22 +18,22 @@ if(NOT yaml-cpp_POPULATED)
   add_subdirectory(${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR})
 endif()
 
-add_library(lib_performance ${PERFORMANCE_DIR})
+add_library(performance ${PERFORMANCE_DIR})
 
 # Adjusting CUDA flags
-set_target_properties(lib_performance PROPERTIES CUDA_ARCHITECTURES 61)
+set_target_properties(performance PROPERTIES CUDA_ARCHITECTURES 61)
 
 # Linking libraries
-target_link_libraries(lib_performance PRIVATE CUDA::cudart)
-target_link_libraries(lib_performance PUBLIC yaml-cpp::yaml-cpp)
+target_link_libraries(performance PRIVATE CUDA::cudart)
+target_link_libraries(performance PUBLIC yaml-cpp::yaml-cpp)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(lib_performance PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-G>)
+    target_compile_options(performance PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-G>)
 endif()
-set_target_properties(lib_performance PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(performance PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Treat warnings as errors for C and C++ files
 if(MSVC)
-    target_compile_options(lib_performance PRIVATE /W4 /WX)
+    target_compile_options(performance PRIVATE /W4 /WX)
 else()
-    target_compile_options(lib_performance PRIVATE -Wall -Wextra -Werror)
+    target_compile_options(performance PRIVATE -Wall -Wextra -Werror)
 endif()
