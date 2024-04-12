@@ -4,7 +4,7 @@
 
 #include "util/data.h"
 
-void WriteNoise::addWriteNoise(CAMData *camData) {
+void WriteNoise::addWriteNoise(CAMArray *camData) {
   std::cerr << "\033[33mWARNING: WriteNoise::addWriteNoise() is not "
                "implemented yet\033[0m"
             << std::endl;

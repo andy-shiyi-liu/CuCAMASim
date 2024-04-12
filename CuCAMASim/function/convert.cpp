@@ -141,12 +141,12 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
 // Converts data to a physical representation suitable for write operations.
 // Depending on the CAM cell type (e.g., ACAM), it converts data to a physical
 // voltage representation.
-void ConvertToPhys::write(CAMData *camData) {
+void ConvertToPhys::write(CAMArray *camData) {
   if (cell == "ACAM") {
-    if (camData->getType() != ACAM_DATA) {
-      throw std::runtime_error("ERROR: CAMData type should be ACAM_DATA");
+    if (camData->getType() != ACAM_ARRAY) {
+      throw std::runtime_error("ERROR: CAMArray type should be ACAM_ARRAY");
     }
-    ACAMData *acamData = static_cast<ACAMData *>(camData);
+    ACAMArray *acamData = static_cast<ACAMArray *>(camData);
     double boundaryMin = acamData->min();
     double boundaryMax = acamData->max();
 
@@ -182,7 +182,7 @@ void ConvertToPhys::write(CAMData *camData) {
 }
 
 // convert the data in camData from numerical to voltage representation.
-void ConvertToPhys::acamN2V(ACAMData *camData) {
+void ConvertToPhys::acamN2V(ACAMArray *camData) {
   for (uint32_t i = 0; i < camData->getNRows(); i++) {
     for (uint32_t j = 0; j < camData->getNCols(); j++) {
       if (std::isinf(camData->at(i, j, 0))) {

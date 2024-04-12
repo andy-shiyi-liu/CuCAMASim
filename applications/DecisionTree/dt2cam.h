@@ -81,7 +81,7 @@ class StemNode : public TreeNode {
 class DecisionTree {
  private:
   std::vector<std::string> treeText;
-  ACAMData *camData = nullptr;
+  ACAMArray *camData = nullptr;
   std::list<LeafNode *> leafNodes;
   std::vector<uint64_t> featureIDs;
   std::list<uint64_t> classIDs;
@@ -91,7 +91,7 @@ class DecisionTree {
   void parseTreeText();
   TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);
   void printSubTree(TreeNode* treeNode, std::string spacing);
-  ACAMData* tree2camThresholdArray();
+  ACAMArray* tree2camThresholdArray();
 
  public:
   DecisionTree(const std::filesystem::path& treeTextPath) {
@@ -120,7 +120,7 @@ class DecisionTree {
     }
     std::cout << oss.str();  // Print the string stream
   };
-  ACAMData *toACAM();
+  ACAMArray *toACAM();
 };
 
 #endif

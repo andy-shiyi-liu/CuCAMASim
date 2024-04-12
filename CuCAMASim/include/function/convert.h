@@ -34,11 +34,11 @@ class ConvertToPhys {
     return -2.79080037e-01 * std::exp(-1.24915981e-01 * x) +
            6.36010747e-04 * x + 1.00910243;
   };
-  void acamN2V(ACAMData *camData);
+  void acamN2V(ACAMArray *camData);
 
  public:
   ConvertToPhys(CellConfig *cellConfig, MappingConfig *mappingConfig);
-  void write(CAMData *camData);
+  void write(CAMArray *camData);
   ~ConvertToPhys() {}
 };
 

@@ -8,7 +8,7 @@
 #include "matio.h"
 
 double* loadInputMatrix(mat_t* matfp, const char* variableName, size_t& rows,
-                         size_t& cols) {
+                        size_t& cols) {
   matvar_t* matvar = Mat_VarRead(matfp, variableName);
   if (!matvar)
     throw std::runtime_error("Variable " + std::string(variableName) +
@@ -27,7 +27,7 @@ double* loadInputMatrix(mat_t* matfp, const char* variableName, size_t& rows,
 }
 
 uint64_t* loadLabelMatrix(mat_t* matfp, const char* variableName,
-                           size_t& nLabels) {
+                          size_t& nLabels) {
   matvar_t* matvar = Mat_VarRead(matfp, variableName);
   if (!matvar)
     throw std::runtime_error("Variable " + std::string(variableName) +
@@ -73,4 +73,15 @@ void Dataset::loadDataset(std::filesystem::path datasetPath) {
   // Load TestLabels
   uint64_t* testLabelsData = loadLabelMatrix(matfp, "testLabels", nVectors);
   this->testLabels = new LabelData(nVectors, testLabelsData);
+}
+
+void CAMArray::initData() {
+  type = CAM_ARRAY;
+  uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
+  this->data = new double[nElem];
+  for (uint32_t i = 0; i < dim.nRows; i++) {
+    for (uint32_t j = 0; j < dim.nCols; j++) {
+      set(i, j, std::numeric_limits<float>::quiet_NaN());
+    }
+  }
 }

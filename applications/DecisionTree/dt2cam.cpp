@@ -87,8 +87,8 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
   }
 };
 
-ACAMData* DecisionTree::tree2camThresholdArray() {
-  ACAMData* camData = new ACAMData(leafNodes.size(), featureIDs.size());
+ACAMArray* DecisionTree::tree2camThresholdArray() {
+  ACAMArray* camData = new ACAMArray(leafNodes.size(), featureIDs.size());
   camData->initData();
   std::sort(featureIDs.begin(), featureIDs.end());
 
@@ -131,13 +131,13 @@ ACAMData* DecisionTree::tree2camThresholdArray() {
       currentNode = parentNode;
     }
   }
-  assert(camData->checkDim() && "CAMData dimensions do not match");
+  assert(camData->checkDim() && "CAMArray dimensions do not match");
   return camData;
 };
 
-ACAMData* DecisionTree::toACAM() {
+ACAMArray* DecisionTree::toACAM() {
   parseTreeText();
-  ACAMData* camData = tree2camThresholdArray();
+  ACAMArray* camData = tree2camThresholdArray();
   return camData;
 };
 

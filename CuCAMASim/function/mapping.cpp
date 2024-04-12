@@ -5,7 +5,7 @@
 
 #include "util/data.h"
 
-void Mapping::addNewMapping(CAMData *camData) {
+void Mapping::addNewMapping(CAMArray *camData) {
   std::cerr << "\033[33mWARNING: Mapping::addNewMapping() is not implemented "
                "yet\033[0m"
             << std::endl;
@@ -20,7 +20,7 @@ void Mapping::addNewMapping(CAMData *camData) {
 //     camUsage: Fraction of CAM array usage.
 // Raises:
 //     NotImplementedError: If the CAM size is smaller than the dataset size.
-double Mapping::checkSize(CAMData *camData) {
+double Mapping::checkSize(CAMArray *camData) {
   double camUsage = 0.0;
   uint64_t dataSize = camData->getNRows() * camData->getNCols();
 
@@ -39,7 +39,7 @@ double Mapping::checkSize(CAMData *camData) {
   return camUsage;
 }
 
-double Mapping::write(CAMData *camData) {
+double Mapping::write(CAMArray *camData) {
   uint32_t nRows = camData->getNRows();
   uint32_t nCols = camData->getNCols();
 
@@ -47,6 +47,11 @@ double Mapping::write(CAMData *camData) {
   colCams = std::ceil(nCols / colSize);
 
   double camUsage = checkSize(camData);
+  if (camData->getType() == ACAM_ARRAY){
+
+  }else{
+    throw std::runtime_error("Write data other than ACAM is not supported yet");
+  }
 
   std::cerr
       << "\033[33mWARNING: Mapping::write() is still under development!\033[0m"

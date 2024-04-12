@@ -16,7 +16,7 @@ class CAMSearch {
     const double searchParameter;
     const std::string sensing;
     const double sensingLimit;
-    using DistFunc = double *(*)(CAMData*, QueryData*); // Function pointer declaration
+    using DistFunc = double *(*)(CAMArray*, QueryData*); // Function pointer declaration
     DistFunc metric;
 
  public:

@@ -36,7 +36,7 @@ class CuCAMASim {
     performanceEvaluator = new PerformanceEvaluator();
     std::cout << "CuCAMASim() done" << std::endl;
   };
-  void write(CAMData *camData);
+  void write(CAMArray *camData);
   ~CuCAMASim() {
     delete functionSimulator;
     functionSimulator = nullptr;

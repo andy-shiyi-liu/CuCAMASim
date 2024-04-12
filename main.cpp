@@ -21,7 +21,7 @@ Dataset* loadDataset(std::string datasetName){
 int main() {
   std::cout << "hello world!" << std::endl;
   DecisionTree dt("/workspaces/CuCAMASim/data/treeText/exampleTreeText.txt");
-  ACAMData *camData = dt.toACAM();
+  ACAMArray *camData = dt.toACAM();
   std::cout << "Original TreeText:" << std::endl;
   dt.printTreeText();
   std::cout << "Exported TreeText:" << std::endl;

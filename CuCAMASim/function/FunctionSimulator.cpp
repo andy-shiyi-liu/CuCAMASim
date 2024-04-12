@@ -5,7 +5,7 @@
 #include "function/cuda/distance.cuh"
 #include "util/data.h"
 
-void FunctionSimulator::write(CAMData *camData){
+void FunctionSimulator::write(CAMArray *camData){
     // 1. Quantization (optional for ACAM)
     if (camConfig->arrayConfig->cell != "ACAM"){
         quantizer->write(camData);

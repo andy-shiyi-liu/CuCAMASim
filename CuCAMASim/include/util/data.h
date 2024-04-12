@@ -11,20 +11,20 @@
 #include <map>
 #include <vector>
 
-enum CAMDataType { CAM_DATA, ACAM_DATA, INVALID_CAMDATA };
+enum CAMArrayType { CAM_ARRAY, ACAM_ARRAY, INVALID_CAMARRAY };
 
 class Data {};
 
-class CAMData : public Data {
+class CAMArray : public Data {
  private:
   virtual inline void checkDataValid() {
-    assert(type == CAM_DATA &&
-           "self data type is not CAM_DATA, have you initialized the data by "
+    assert(type == CAM_ARRAY &&
+           "self data type is not CAM_ARRAY, have you initialized the data by "
            "initData()?");
   }
 
  protected:
-  CAMDataType type = INVALID_CAMDATA;
+  CAMArrayType type = INVALID_CAMARRAY;
   struct CAMDataDim {
     uint32_t nRows;
     uint32_t nCols;
@@ -44,33 +44,28 @@ class CAMData : public Data {
   std::vector<double> col2featureID;
   std::vector<double> row2classID;
 
-  CAMData(uint32_t nRows, uint32_t nCols) {
+  CAMArray(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
     dim.nCols = nCols;
     dim.nBoundaries = 1;
   };
-  virtual void initData() {
-    type = CAM_DATA;
-    uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
-    this->data = new double[nElem];
-    for (uint32_t i = 0; i < dim.nRows; i++) {
-      for (uint32_t j = 0; j < dim.nCols; j++) {
-        set(i, j, std::numeric_limits<float>::quiet_NaN());
-      }
+  virtual void initData();
+  virtual inline double at(uint32_t rowNum, uint32_t colNum) {
+    checkDataValid();
+    if (rowNum >= dim.nRows || colNum >= dim.nCols) {
+      return std::numeric_limits<float>::quiet_NaN();
+    } else {
+      uint32_t index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
+      return data[index];
     }
   }
-  virtual inline double at(int rowNum, int colNum) {
-    checkDataValid();
-    int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
-    return data[index];
-  }
-  virtual inline void set(int rowNum, int colNum, double val) {
+  virtual inline void set(uint32_t rowNum, uint32_t colNum, double val) {
+    assert(rowNum < dim.nRows && colNum < dim.nCols && "Index out of range");
     checkDataValid();
     int index = dim.nBoundaries * (colNum + dim.nCols * rowNum);
     data[index] = val;
     updateMinMax(val);
   }
-
   inline bool checkDim() {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
   }
@@ -79,15 +74,13 @@ class CAMData : public Data {
     std::cout << "nCols: " << dim.nCols << std::endl;
     std::cout << "nBoundaries: " << dim.nBoundaries << std::endl;
   }
-
   inline double min() { return _min; }
   inline double max() { return _max; }
-  inline CAMDataType getType() { return type; }
-
+  inline CAMArrayType getType() { return type; }
   inline uint32_t getNRows() { return dim.nRows; }
   inline uint32_t getNCols() { return dim.nCols; }
 
-  virtual ~CAMData() {
+  virtual ~CAMArray() {
     if (data != nullptr) {
       delete[] data;
       data = nullptr;
@@ -95,16 +88,17 @@ class CAMData : public Data {
   };
 };
 
-class ACAMData : public CAMData {
+class ACAMArray : public CAMArray {
  private:
- inline void checkDataValid() override {
-    assert(type == ACAM_DATA &&
-           "self data type is not ACAM_DATA, have you initialized the data by "
+  inline void checkDataValid() override {
+    assert(type == ACAM_ARRAY &&
+           "self data type is not ACAM_ARRAY, have you initialized the data by "
            "initData()?");
   }
+
  public:
   void initData() override {
-    type = ACAM_DATA;
+    type = ACAM_ARRAY;
     assert(dim.nBoundaries == 2);
     uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
     this->data = new double[nElem];
@@ -115,27 +109,31 @@ class ACAMData : public CAMData {
       }
     }
   }
-  ACAMData(uint32_t nRows, uint32_t nCols) : CAMData(nRows, nCols) {
+  ACAMArray(uint32_t nRows, uint32_t nCols) : CAMArray(nRows, nCols) {
     dim.nBoundaries = 2;
   }
-  inline void set(int rowNum, int colNum, double val) override {
+  inline void set(uint32_t rowNum, uint32_t colNum, double val) override {
     assert(0 && rowNum && colNum && val &&
-           "boundary number is needed for ACAMData");
-  }
-  inline void set(int rowNum, int colNum, int bdNum, double val) {
+           "boundary number is needed for ACAMArray");
+  };
+  inline void set(uint32_t rowNum, uint32_t colNum, uint32_t bdNum,
+                  double val) {
     checkDataValid();
-    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+    uint32_t index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
     data[index] = val;
     updateMinMax(val);
   }
-  inline double at(int rowNum, int colNum) override {
-    checkDataValid();
-    assert(0 && rowNum && colNum && "boundary number is needed for ACAMData");
+  inline double at(uint32_t rowNum, uint32_t colNum) override {
+    assert(0 && rowNum && colNum && "boundary number is needed for ACAMArray");
   }
-  inline double at(int rowNum, int colNum, int bdNum) {
+  inline double at(uint32_t rowNum, uint32_t colNum, uint32_t bdNum) {
     checkDataValid();
-    int index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
-    return data[index];
+    if (rowNum >= dim.nRows || colNum >= dim.nCols) {
+      return std::numeric_limits<float>::quiet_NaN();
+    } else {
+      uint32_t index = bdNum + dim.nBoundaries * (colNum + dim.nCols * rowNum);
+      return data[index];
+    }
   }
   inline void toCSV(const std::filesystem::path &outputPath) {
     toCSV(outputPath, ",");
