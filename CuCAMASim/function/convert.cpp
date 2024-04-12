@@ -173,7 +173,7 @@ void ConvertToPhys::write(CAMData *camData) {
     }
     acamN2V(camData);
   }else{
-    throw std::runtime_error("Cell types other than ACAM are not implemented");
+    throw std::runtime_error("Cell types other than ACAM are not implemented yet");
   }
 }
 

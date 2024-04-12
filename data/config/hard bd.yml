@@ -37,10 +37,13 @@ query:
   parameter: 30
   searchScheme: exact
 mapping:
-  expandAll:
-    strategy: "n sigma"
-    sigma: 1
-    nSigma: 1
-# longBoundaryPartition:
-#   boundaryPartitionThreshold: 0.2
-#   partitionLength: 0.2
+  N2VConvert:
+    maxConvertConductance: 140
+    minConvertConductance: 10
+    lineConvertRangeMin: -0.1
+    lineConvertRangeMax: 1.1
+    queryClipRangeMin: -0.1
+    queryClipRangeMax: 1.1
+  expandConductanceAll:
+    strategy: "fixed size"
+    expandSize: 0

@@ -75,7 +75,7 @@ class CAMData : public Data {
     for (uint32_t i = 0; i < dim.nRows; i++) {
       file << "row_" << i << sep;
       for (uint32_t j = 0; j < dim.nCols; j++) {
-        file << at(i, j, 0) << " <= x < " << at(i, j, 1) << sep;
+        file << at(i, j, 0) << " < x <= " << at(i, j, 1) << sep;
       }
       file << "class_" << row2classID[i] << std::endl;
     }
