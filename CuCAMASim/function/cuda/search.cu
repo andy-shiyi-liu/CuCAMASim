@@ -1,5 +1,6 @@
 #include <limits>
 
+#include "function/cuda/distance.cuh"
 #include "function/cuda/search.cuh"
 #include "function/cuda/util.cuh"
 #include "util/consts.h"
@@ -39,8 +40,31 @@ void arraySearch(const CAMSearch *CAMSearch, const CAMDataBase *camData,
                  double **matchIdxDist, const uint32_t rowCamIdx,
                  const uint32_t colCamIdx) {
   uint32_t rowSize = camData->getRowSize(), colSize = camData->getColSize();
+
   double **distanceArray = new2DArray<double>(
       rowSize, colSize, std::numeric_limits<double>::quiet_NaN());
+
+  if (CAMSearch->getDistType() == "euclidean") {
+    throw std::runtime_error(
+        "NotImplementedError: Euclidean distance is not implemented yet");
+  } else if (CAMSearch->getDistType() == "manhattan") {
+    throw std::runtime_error(
+        "NotImplementedError: Manhattan distance is not implemented yet");
+  } else if (CAMSearch->getDistType() == "hamming") {
+    throw std::runtime_error(
+        "NotImplementedError: Hamming distance is not implemented yet");
+  } else if (CAMSearch->getDistType() == "innerproduct") {
+    throw std::runtime_error(
+        "NotImplementedError: Inner product distance is not implemented yet");
+  } else if (CAMSearch->getDistType() == "range") {
+    throw std::runtime_error(
+    "NotImplementedError: Range distance is not implemented yet");
+  } else if (CAMSearch->getDistType() == "softRange") {
+    throw std::runtime_error(
+        "NotImplementedError: Soft range distance is not implemented yet");
+  } else {
+    throw std::runtime_error("NotImplementedError: Unknown distance type");
+  }
 
   std::cerr << "\033[33mWARNING: arraySearch() is still under "
                "development\033[0m"
