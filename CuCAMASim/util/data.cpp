@@ -1,6 +1,5 @@
 #include "util/data.h"
 
-
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -77,8 +76,8 @@ void Dataset::loadDataset(std::filesystem::path datasetPath) {
 }
 
 void InputData::clip(double min, double max) {
-  for (uint64_t i = 0; i < dim.nVectors; i++) {
-    for (uint64_t j = 0; j < dim.nFeatures; j++) {
+  for (uint32_t i = 0; i < dim.nVectors; i++) {
+    for (uint32_t j = 0; j < dim.nFeatures; j++) {
       double val = at(i, j);
       if (val < min) {
         set(i, j, min);
@@ -159,7 +158,7 @@ void ACAMData::initData(ACAMArray* acamArray) {
       targetSubarray->row2classID.push_back(acamArray->row2classID[i]);
     }
   }
-  for (uint64_t i = nRows; i < _rowCams * _rowSize; i++) {
+  for (uint32_t i = nRows; i < _rowCams * _rowSize; i++) {
     uint32_t camRowIdx = i / _rowSize;
     for (uint32_t camColIdx = 0; camColIdx < _colCams; camColIdx++) {
       ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
@@ -174,7 +173,7 @@ void ACAMData::initData(ACAMArray* acamArray) {
       targetSubarray->col2featureID.push_back(acamArray->col2featureID[j]);
     }
   }
-  for (uint64_t j = nCols; j < _colCams * _colSize; j++) {
+  for (uint32_t j = nCols; j < _colCams * _colSize; j++) {
     uint32_t camColIdx = j / _colSize;
     for (uint32_t camRowIdx = 0; camRowIdx < _rowCams; camRowIdx++) {
       ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
@@ -188,4 +187,15 @@ void ACAMData::initData(ACAMArray* acamArray) {
     assert(camArrays[i]->isDimMatch());
   }
   type = ACAM_DATA_COLD_START;
+}
+
+void QueryData::initData(const InputData* inputData, const CAMData* camData) {
+  // 1. 
+
+  std::cerr << "\033[33mWARNING: QueryData::initData() is still under "
+               "development\033[0m"
+            << std::endl;
+  inputData->getNFeatures();
+  camData->getType();
+  return;
 }

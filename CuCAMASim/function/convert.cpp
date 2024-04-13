@@ -216,8 +216,8 @@ void ConvertToPhys::query(InputData *inputData) const {
 
   if (cell == "ACAM") {
     inputData->clip(queryClipRangeMin, queryClipRangeMax);
-    for (uint64_t i = 0; i < inputData->getNVectors(); i++) {
-      for (uint64_t j = 0; j < inputData->getNFeatures(); j++) {
+    for (uint32_t i = 0; i < inputData->getNVectors(); i++) {
+      for (uint32_t j = 0; j < inputData->getNFeatures(); j++) {
         inputData->set(i, j,
                        num2Vbd<double>(inputData->at(i, j), lineConvertRangeMin,
                                        lineConvertRangeMax, VbdMin, VbdMax));

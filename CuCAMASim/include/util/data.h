@@ -38,16 +38,16 @@ class CAMArrayBase : public Data {
   virtual void initData() = 0;
 
  public:
-  std::vector<double> col2featureID;
-  std::vector<double> row2classID;
+  std::vector<uint32_t> col2featureID;
+  std::vector<uint32_t> row2classID;
   CAMArrayBase(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
     dim.nCols = nCols;
     dim.nBoundaries = (uint32_t)-1;
   };
   CAMArrayBase(uint32_t nRows, uint32_t nCols, double *arrayData,
-               std::vector<double> &col2featureID,
-               std::vector<double> &row2classID) {
+               std::vector<uint32_t> &col2featureID,
+               std::vector<uint32_t> &row2classID) {
     dim.nRows = nRows;
     dim.nCols = nCols;
     dim.nBoundaries = (uint32_t)-1;
@@ -97,7 +97,7 @@ class CAMArray : public CAMArrayBase {
 
  public:
   CAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
-           std::vector<double> &col2featureID, std::vector<double> &row2classID)
+           std::vector<uint32_t> &col2featureID, std::vector<uint32_t> &row2classID)
       : CAMArrayBase(nRows, nCols, arrayData, col2featureID, row2classID) {
     dim.nBoundaries = 1;
     type = CAM_ARRAY_EXISTING_DATA;
@@ -160,8 +160,8 @@ class ACAMArray : public CAMArrayBase {
  public:
   void initData() override;
   ACAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
-            std::vector<double> &col2featureID,
-            std::vector<double> &row2classID)
+            std::vector<uint32_t> &col2featureID,
+            std::vector<uint32_t> &row2classID)
       : CAMArrayBase(nRows, nCols, arrayData, col2featureID, row2classID) {
     dim.nBoundaries = 2;
     type = ACAM_ARRAY_EXISTING_DATA;
@@ -313,36 +313,6 @@ class ACAMData : public CAMDataBase {
   };
 };
 
-class QueryData : public Data {
- private:
-  struct QueryDataDim {
-    uint32_t nVectors;
-    uint32_t nFeatures;
-  } dim;
-  double *data = nullptr;
-
- public:
-  QueryData(uint32_t nVectors, uint32_t nFeatures) {
-    dim.nVectors = nVectors;
-    dim.nFeatures = nFeatures;
-    uint64_t nElem = dim.nVectors * dim.nFeatures;
-    this->data = new double[nElem];
-  };
-  double &at(int vecNum, int featureNum) {
-    return data[featureNum + dim.nFeatures * vecNum];
-  }
-
-  inline uint32_t getNVectors() const { return dim.nVectors; }
-  inline uint32_t getNFeatures() const { return dim.nFeatures; }
-
-  ~QueryData() {
-    if (data != nullptr) {
-      delete[] data;
-      data = nullptr;
-    }
-  };
-};
-
 // for test data in dataset
 class InputData : public Data {
  private:
@@ -460,6 +430,38 @@ class Dataset {
     if (testLabels != nullptr) {
       delete testLabels;
       testLabels = nullptr;
+    }
+  };
+};
+
+class QueryData : public Data {
+ protected:
+  const uint32_t _nVectors = (uint32_t)-1, _colCams = (uint32_t)-1,
+                 _colSize = (uint32_t)-1;
+  InputData **camQuries = nullptr;
+
+ public:
+  QueryData(uint32_t nVectors, uint32_t colCams, uint32_t colSize)
+      : _nVectors(nVectors), _colCams(colCams), _colSize(colSize) {
+    camQuries = new InputData *[colCams];
+    for (uint32_t i = 0; i < colCams; i++) {
+      camQuries[i] =
+          new InputData(nVectors, colSize, new double[nVectors * colSize]);
+    }
+  };
+
+  void initData(const InputData *inputData, const CAMData *camData); 
+
+  ~QueryData() {
+    if (camQuries != nullptr) {
+      for (uint32_t i = 0; i < _colCams; i++) {
+        if (camQuries[i] != nullptr) {
+          delete camQuries[i];
+          camQuries[i] = nullptr;
+        }
+      }
+      delete[] camQuries;
+      camQuries = nullptr;
     }
   };
 };

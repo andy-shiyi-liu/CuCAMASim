@@ -27,7 +27,7 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
     // do regex matching to extract classID
     std::regex classIDRegex("[0-9]+.?0?");
     if ((std::regex_search(treeText[lineID], match, classIDRegex))) {
-      uint64_t classID = std::stoi(match[0].str());
+      uint32_t classID = std::stoi(match[0].str());
       LeafNode* leafNode = new LeafNode(classID, parentNode);
       leafNodes.push_back(leafNode);
       // if classID not in classIDs, append current classID to classIDs
@@ -50,7 +50,7 @@ TreeNode* DecisionTree::parseSubTree(uint64_t& lineID, TreeNode* parentNode) {
       throw std::runtime_error("Unable to parse featureID from line:\n" +
                                treeText[lineID]);
     }
-    uint64_t featureID = std::stoi(match[0].str().substr(8));
+    uint32_t featureID = std::stoi(match[0].str().substr(8));
     // if featureID not in featureIDs, append current featureID to featureIDs
     if (std::find(featureIDs.begin(), featureIDs.end(), featureID) ==
         featureIDs.end()) {
@@ -92,7 +92,7 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
   camArray->initData();
   std::sort(featureIDs.begin(), featureIDs.end());
 
-  for (uint64_t featureID : featureIDs) {
+  for (uint32_t featureID : featureIDs) {
     camArray->col2featureID.push_back(featureID);
   }
 
@@ -103,7 +103,7 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
       // assert that parentNode is a StemNode
       assert(currentNode->getParent()->getType() == STEM_NODE);
       StemNode* parentNode = dynamic_cast<StemNode*>(currentNode->getParent());
-      uint64_t featureID = parentNode->getFeatureID();
+      uint32_t featureID = parentNode->getFeatureID();
       uint8_t boundaryID;
       if (currentNode == parentNode->getLeNode()) {
         boundaryID = 1;
@@ -112,10 +112,10 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
         boundaryID = 0;
       }
       double threshold = parentNode->getThreshold();
-      uint64_t rowID = camArray->row2classID.size() - 1;
+      uint32_t rowID = camArray->row2classID.size() - 1;
       auto it = std::find(featureIDs.begin(), featureIDs.end(), featureID);
       assert(it != featureIDs.end() && "featureID not found in featureIDs");
-      uint64_t colID = std::distance(featureIDs.begin(), it);
+      uint32_t colID = std::distance(featureIDs.begin(), it);
       if (std::isinf(camArray->at(rowID, colID, boundaryID))) {
         camArray->set(rowID, colID, boundaryID, threshold);
       } else {

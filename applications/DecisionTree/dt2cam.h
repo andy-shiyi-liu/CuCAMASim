@@ -29,22 +29,22 @@ class StemNode;
 
 class LeafNode : public TreeNode {
  private:
-  uint64_t classID = (uint64_t)-1;
+  uint32_t classID = (uint32_t)-1;
   TreeNode *parent = nullptr;
   TreeNodeType type = LEAF_NODE;
 
  public:
-  LeafNode(uint64_t classID, TreeNode *parent)
+  LeafNode(uint32_t classID, TreeNode *parent)
       : classID(classID), parent(parent) {}
   TreeNodeType getType() override { return type; };
-  uint64_t getClassID() { return classID; };
+  uint32_t getClassID() { return classID; };
   TreeNode *getParent() override { return parent; };
   virtual ~LeafNode() {}
 };
 
 class StemNode : public TreeNode {
  private:
-  uint64_t featureID = (uint64_t)-1;
+  uint32_t featureID = (uint32_t)-1;
   double threshold = 0.0;
   TreeNode *leNode = nullptr;
   TreeNode *gtNode = nullptr;
@@ -52,10 +52,10 @@ class StemNode : public TreeNode {
   TreeNodeType type = STEM_NODE;
 
  public:
-  StemNode(uint64_t featureID, double threshold, TreeNode *parent)
+  StemNode(uint32_t featureID, double threshold, TreeNode *parent)
       : featureID(featureID), threshold(threshold), parent(parent){};
   StemNode(){};
-  void init(uint64_t featureID, double threshold, TreeNode *parent,
+  void init(uint32_t featureID, double threshold, TreeNode *parent,
             TreeNode *leNode, TreeNode *gtNode) {
     this->featureID = featureID;
     this->threshold = threshold;
@@ -63,7 +63,7 @@ class StemNode : public TreeNode {
     this->leNode = leNode;
     this->gtNode = gtNode;
   };
-  uint64_t getFeatureID() { return featureID; };
+  uint32_t getFeatureID() { return featureID; };
   double getThreshold() { return threshold; };
   TreeNode *getLeNode() { return leNode; };
   TreeNode *getGtNode() { return gtNode; };
@@ -83,8 +83,8 @@ class DecisionTree {
   std::vector<std::string> treeText;
   ACAMArray *camArray = nullptr;
   std::list<LeafNode *> leafNodes;
-  std::vector<uint64_t> featureIDs;
-  std::list<uint64_t> classIDs;
+  std::vector<uint32_t> featureIDs;
+  std::list<uint32_t> classIDs;
   std::list<double> thresholds;
   TreeNode *rootNode = nullptr;
 

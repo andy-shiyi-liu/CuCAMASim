@@ -10,9 +10,9 @@ class Config {};
 
 class ArchConfig : public Config {
  public:
-  const uint64_t arrays_per_mat, mats_per_bank, subarrays_per_array;
-  ArchConfig(uint64_t arrays_per_mat, uint64_t mats_per_bank,
-             uint64_t subarrays_per_array);
+  const uint32_t arrays_per_mat, mats_per_bank, subarrays_per_array;
+  ArchConfig(uint32_t arrays_per_mat, uint32_t mats_per_bank,
+             uint32_t subarrays_per_array);
   ArchConfig(YAML::Node archConfig);
   void print();
 };

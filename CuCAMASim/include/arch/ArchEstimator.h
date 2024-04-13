@@ -8,8 +8,8 @@
 class ArchEstimator {
  private:
   ArchConfig *archConfig;
-  uint64_t nCol;
-  uint64_t nRow;
+  uint32_t nCol;
+  uint32_t nRow;
 
  public:
   ArchEstimator(CamConfig *camConfig) {
