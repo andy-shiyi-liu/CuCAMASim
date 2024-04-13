@@ -25,7 +25,7 @@ class  Mapping {
 
   void addNewMapping(CAMArrayBase *camArray);
   double write(CAMArrayBase *camArray);
-  void query(InputData *inputData) const;
+  void query(InputData *inputData);
 
   uint32_t getRowCams() const { return rowCams; }
   uint32_t getColCams() const { return colCams; }
@@ -40,7 +40,7 @@ class  Mapping {
       camData = nullptr;
     }
     if (queryData != nullptr) {
-      delete[] queryData;
+      delete queryData;
       queryData = nullptr;
     }
   }

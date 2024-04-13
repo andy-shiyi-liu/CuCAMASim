@@ -1,5 +1,6 @@
 #include "util/data.h"
 
+#include <algorithm>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -126,6 +127,12 @@ void ACAMData::initData(ACAMArray* acamArray) {
   uint64_t nElem = _rowCams * _colCams;
   this->camArrays = new ACAMArray*[nElem];
 
+  if (_colCams >1 || _rowCams > 1){
+    std::cerr
+      << "\033[33mWARNING: mapping to multiple cam subarrays is not tested, the result may be wrong.\033[0m"
+      << std::endl;
+  }
+
   // check data size validity
   uint32_t nRows = acamArray->getNRows(), nCols = acamArray->getNCols();
   if (nRows > _rowSize * _rowCams || nCols > _colSize * _colCams) {
@@ -180,22 +187,62 @@ void ACAMData::initData(ACAMArray* acamArray) {
       targetSubarray->col2featureID.push_back((uint32_t)-1);
     }
   }
+
+  // check if the data is valid
   for (uint64_t i = 0; i < nElem; i++) {
     assert(camArrays[i]->getType() == ACAM_ARRAY_COLD_START);
     camArrays[i]->toCSV("/workspaces/CuCAMASim/subarray" + std::to_string(i) +
                         ".csv");
     assert(camArrays[i]->isDimMatch());
   }
+  // check the consistency of row2classID
+  for (uint32_t rowCamIdx = 0; rowCamIdx < _rowCams; rowCamIdx++) {
+    for (uint32_t colCamIdx = 0; colCamIdx < _colCams; colCamIdx++) {
+      ACAMArray* targetSubarray = at(rowCamIdx, colCamIdx);
+      assert(std::equal(targetSubarray->row2classID.begin(),
+                        targetSubarray->row2classID.end(),
+                        at(rowCamIdx, 0)->row2classID.begin()));
+    }
+  }
+  // check the consistency of col2featureID
+  for (uint32_t colCamIdx = 0; colCamIdx < _colCams; colCamIdx++) {
+    for (uint32_t rowCamIdx = 0; rowCamIdx < _rowCams; rowCamIdx++) {
+      ACAMArray* targetSubarray = at(rowCamIdx, colCamIdx);
+      assert(std::equal(targetSubarray->col2featureID.begin(),
+                        targetSubarray->col2featureID.end(),
+                        at(0, colCamIdx)->col2featureID.begin()));
+    }
+  }
+
   type = ACAM_DATA_COLD_START;
 }
 
-void QueryData::initData(const InputData* inputData, const CAMData* camData) {
-  // 1. 
-
-  std::cerr << "\033[33mWARNING: QueryData::initData() is still under "
-               "development\033[0m"
-            << std::endl;
-  inputData->getNFeatures();
-  camData->getType();
+void QueryData::initData(const InputData* inputData, const CAMDataBase* camData) {
+  assert(_colCams != (uint32_t)-1 && _colSize != (uint32_t)-1 &&
+         _nVectors != (uint32_t)-1);
+  assert(_colCams == camData->getColCams());
+  assert(_colSize == camData->getColSize());
+  assert(_nVectors == inputData->getNVectors());
+  if (_colCams >1){
+    std::cerr
+      << "\033[33mWARNING: mapping to multiple colCams is not tested, the result may be wrong.\033[0m"
+      << std::endl;
+  }
+  
+  for (uint32_t colCamIdx = 0; colCamIdx < _colCams; colCamIdx++) {
+    for (uint32_t colIdx = 0; colIdx < _colSize; colIdx++) {
+      uint32_t featureIdx = camData->at(0, colCamIdx)->col2featureID[colIdx];
+      for (uint32_t vectorIdx = 0; vectorIdx < _nVectors; vectorIdx++) {
+        if (featureIdx != (uint32_t)-1) {
+          at(colCamIdx)->set(vectorIdx, colIdx,
+                             inputData->at(vectorIdx, featureIdx));
+        } else {
+          at(colCamIdx)->set(vectorIdx, colIdx, 0);
+        }
+      }
+    }
+  }
+  std::cout << "--> Mapping the query..., " << _nVectors << " Query, "
+            << _colCams << " COL" << std::endl;
   return;
 }

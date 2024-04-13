@@ -47,23 +47,22 @@ double Mapping::write(CAMArrayBase *camArray) {
   colCams = std::ceil((double)nCols / colSize);
 
   double camUsage = checkSize(camArray);
-  if (camArray->getType() == ACAM_ARRAY_COLD_START || camArray->getType() == ACAM_ARRAY_EXISTING_DATA) {
+  if (camArray->getType() == ACAM_ARRAY_COLD_START ||
+      camArray->getType() == ACAM_ARRAY_EXISTING_DATA) {
     camData = new ACAMData(rowCams, colCams, rowSize, colSize);
     camData->initData(camArray);
     assert(camData->getType() == ACAM_DATA_COLD_START);
   } else {
     throw std::runtime_error("Write data other than ACAM is not supported yet");
   }
-  
+
   return camUsage;
 }
 
-void Mapping::query(InputData *inputData) const{
+void Mapping::query(InputData *inputData) {
+  queryData = new QueryData(camData->getColCams(), inputData->getNVectors(),
+                            camData->getColSize());
 
-  // queryData = new QueryData();
-
-  std::cerr << "\033[33mWARNING: Mapping::query() is still under development\033[0m"
-            << std::endl;
-  inputData->getNFeatures();
+  queryData->initData(inputData, camData);
   return;
 }

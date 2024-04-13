@@ -97,7 +97,8 @@ class CAMArray : public CAMArrayBase {
 
  public:
   CAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
-           std::vector<uint32_t> &col2featureID, std::vector<uint32_t> &row2classID)
+           std::vector<uint32_t> &col2featureID,
+           std::vector<uint32_t> &row2classID)
       : CAMArrayBase(nRows, nCols, arrayData, col2featureID, row2classID) {
     dim.nBoundaries = 1;
     type = CAM_ARRAY_EXISTING_DATA;
@@ -245,8 +246,16 @@ class CAMDataBase : public Data {
     this->_rowSize = rowSize;
     this->_colSize = colSize;
   };
+
   inline CAMDataType getType() const { return type; }
+  inline uint32_t getRowCams() const { return _rowCams; }
+  inline uint32_t getColCams() const { return _colCams; }
+  inline uint32_t getRowSize() const { return _rowSize; }
+  inline uint32_t getColSize() const { return _colSize; }
+
   virtual void initData(CAMArrayBase *camArray) = 0;
+  virtual inline CAMArrayBase *at(uint32_t rowNum, uint32_t colNum) const = 0;
+
   virtual ~CAMDataBase(){};
 };
 
@@ -264,7 +273,7 @@ class CAMData : public CAMDataBase {
     initData(dynamic_cast<CAMArray *>(camArray));
   };
   void initData(CAMArray *camArray);
-  inline CAMArrayBase *at(uint32_t rowNum, uint32_t colNum) const {
+  inline CAMArray *at(uint32_t rowNum, uint32_t colNum) const override {
     assert(rowNum < _rowCams && colNum < _colCams && "Index out of range");
     return camArrays[colNum + _colCams * rowNum];
   }
@@ -295,7 +304,7 @@ class ACAMData : public CAMDataBase {
     initData(dynamic_cast<ACAMArray *>(camArray));
   };
   void initData(ACAMArray *acamArray);
-  inline ACAMArray *at(uint32_t rowNum, uint32_t colNum) const {
+  inline ACAMArray *at(uint32_t rowNum, uint32_t colNum) const override {
     assert(rowNum < _rowCams && colNum < _colCams && "Index out of range");
     return this->camArrays[colNum + _colCams * rowNum];
   }
@@ -328,10 +337,14 @@ class InputData : public Data {
     dim.nFeatures = nFeatures;
     this->data = data;
   }
-  inline void set(int vecNum, int featureNum, double val) {
+  inline void set(uint32_t vecNum, uint32_t featureNum, double val) {
+    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
+           "Index out of range");
     data[featureNum + dim.nFeatures * vecNum] = val;
   };
-  inline double at(int vecNum, int featureNum) const {
+  inline double at(uint32_t vecNum, uint32_t featureNum) const {
+    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
+           "Index out of range");
     return data[featureNum + dim.nFeatures * vecNum];
   }
 
@@ -391,7 +404,10 @@ class LabelData : public Data {
     }
     file.close();
   }
-  inline uint64_t at(int vecNum) const { return data[vecNum]; }
+  inline uint64_t at(uint32_t vecNum) const {
+    assert(vecNum < dim.nVectors && "Index out of range");
+    return data[vecNum];
+  }
   inline uint32_t getNVectors() const { return dim.nVectors; }
   ~LabelData() {
     if (data != nullptr) {
@@ -436,13 +452,13 @@ class Dataset {
 
 class QueryData : public Data {
  protected:
-  const uint32_t _nVectors = (uint32_t)-1, _colCams = (uint32_t)-1,
+  const uint32_t _colCams = (uint32_t)-1, _nVectors = (uint32_t)-1,
                  _colSize = (uint32_t)-1;
   InputData **camQuries = nullptr;
 
  public:
-  QueryData(uint32_t nVectors, uint32_t colCams, uint32_t colSize)
-      : _nVectors(nVectors), _colCams(colCams), _colSize(colSize) {
+  QueryData(uint32_t colCams, uint32_t nVectors, uint32_t colSize)
+      : _colCams(colCams), _nVectors(nVectors), _colSize(colSize) {
     camQuries = new InputData *[colCams];
     for (uint32_t i = 0; i < colCams; i++) {
       camQuries[i] =
@@ -450,7 +466,13 @@ class QueryData : public Data {
     }
   };
 
-  void initData(const InputData *inputData, const CAMData *camData); 
+  void initData(const InputData *inputData, const CAMDataBase *camData);
+
+  inline InputData *at(uint32_t colCamIdx) const {
+    assert(colCamIdx < _colCams && "Index out of range");
+    return camQuries[colCamIdx];
+  }
+  inline uint32_t getColCams() const { return _colCams; }
 
   ~QueryData() {
     if (camQuries != nullptr) {
