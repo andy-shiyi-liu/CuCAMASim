@@ -18,6 +18,7 @@ class CAMSearch {
     const double sensingLimit;
     using DistFunc = double *(*)(CAMArrayBase*, QueryData*); // Function pointer declaration
     DistFunc metric;
+    uint32_t _rowCams = (uint32_t)-1, _colCams = (uint32_t)-1;
 
  public:
     CAMSearch(QueryConfig *queryConfig, ArrayConfig *arrayConfig)
