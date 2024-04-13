@@ -10,8 +10,17 @@ set(CMAKE_CUDA_STANDARD 17)
 # Set C++ standard to C++17 or later for std::filesystem support
 set(CMAKE_CXX_STANDARD 17)
 
-# Define the flag
-# add_definitions(-D__MAIN__)
+# set debug build type
+set(CMAKE_BUILD_TYPE Debug)
+
+# add debug symbols and disable optimizations for debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  # Check if the compiler is GNU or Clang
+  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    # Add debug symbols and disable optimizations
+    add_compile_options(-g -O0)
+  endif()
+endif()
 
 # Include header files from specific directories
 include_directories(

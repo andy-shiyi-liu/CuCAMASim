@@ -169,7 +169,7 @@ void ACAMData::initData(ACAMArray* acamArray) {
     uint32_t camRowIdx = i / _rowSize;
     for (uint32_t camColIdx = 0; camColIdx < _colCams; camColIdx++) {
       ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
-      targetSubarray->row2classID.push_back((uint32_t)-1);
+      targetSubarray->row2classID.push_back(uint32_t(-1));
     }
   }
   // set col2featureID for each subarray
@@ -184,7 +184,7 @@ void ACAMData::initData(ACAMArray* acamArray) {
     uint32_t camColIdx = j / _colSize;
     for (uint32_t camRowIdx = 0; camRowIdx < _rowCams; camRowIdx++) {
       ACAMArray* targetSubarray = at(camRowIdx, camColIdx);
-      targetSubarray->col2featureID.push_back((uint32_t)-1);
+      targetSubarray->col2featureID.push_back(uint32_t(-1));
     }
   }
 
@@ -218,8 +218,8 @@ void ACAMData::initData(ACAMArray* acamArray) {
 }
 
 void QueryData::initData(const InputData* inputData, const CAMDataBase* camData) {
-  assert(_colCams != (uint32_t)-1 && _colSize != (uint32_t)-1 &&
-         _nVectors != (uint32_t)-1);
+  assert(_colCams != uint32_t(-1) && _colSize != uint32_t(-1) &&
+         _nVectors != uint32_t(-1));
   assert(_colCams == camData->getColCams());
   assert(_colSize == camData->getColSize());
   assert(_nVectors == inputData->getNVectors());
@@ -233,7 +233,7 @@ void QueryData::initData(const InputData* inputData, const CAMDataBase* camData)
     for (uint32_t colIdx = 0; colIdx < _colSize; colIdx++) {
       uint32_t featureIdx = camData->at(0, colCamIdx)->col2featureID[colIdx];
       for (uint32_t vectorIdx = 0; vectorIdx < _nVectors; vectorIdx++) {
-        if (featureIdx != (uint32_t)-1) {
+        if (featureIdx != uint32_t(-1)) {
           at(colCamIdx)->set(vectorIdx, colIdx,
                              inputData->at(vectorIdx, featureIdx));
         } else {

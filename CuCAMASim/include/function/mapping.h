@@ -10,8 +10,8 @@
 class  Mapping {
  private:
   const uint32_t rowSize, colSize;
-  uint32_t rowCams = (uint32_t)-1, colCams = (uint32_t)-1;
-  uint64_t camSize = (uint64_t)-1;
+  uint32_t rowCams = uint32_t(-1), colCams = uint32_t(-1);
+  uint64_t camSize = uint64_t(-1);
   CAMDataBase *camData = nullptr;
   QueryData *queryData = nullptr;
   double checkSize(CAMArrayBase *camArray);

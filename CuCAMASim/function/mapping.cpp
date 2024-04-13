@@ -24,7 +24,7 @@ double Mapping::checkSize(CAMArrayBase *camArray) {
   double camUsage = 0.0;
   uint64_t dataSize = camArray->getNRows() * camArray->getNCols();
 
-  if (camSize == (uint64_t)-1) {
+  if (camSize == uint64_t(-1)) {
     camSize = dataSize;
     camUsage = 1;
   } else if (camSize < dataSize) {

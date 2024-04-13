@@ -29,7 +29,7 @@ class StemNode;
 
 class LeafNode : public TreeNode {
  private:
-  uint32_t classID = (uint32_t)-1;
+  uint32_t classID = uint32_t(-1);
   TreeNode *parent = nullptr;
   TreeNodeType type = LEAF_NODE;
 
@@ -44,7 +44,7 @@ class LeafNode : public TreeNode {
 
 class StemNode : public TreeNode {
  private:
-  uint32_t featureID = (uint32_t)-1;
+  uint32_t featureID = uint32_t(-1);
   double threshold = 0.0;
   TreeNode *leNode = nullptr;
   TreeNode *gtNode = nullptr;

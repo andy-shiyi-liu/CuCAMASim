@@ -43,14 +43,14 @@ class CAMArrayBase : public Data {
   CAMArrayBase(uint32_t nRows, uint32_t nCols) {
     dim.nRows = nRows;
     dim.nCols = nCols;
-    dim.nBoundaries = (uint32_t)-1;
+    dim.nBoundaries = uint32_t(-1);
   };
   CAMArrayBase(uint32_t nRows, uint32_t nCols, double *arrayData,
                std::vector<uint32_t> &col2featureID,
                std::vector<uint32_t> &row2classID) {
     dim.nRows = nRows;
     dim.nCols = nCols;
-    dim.nBoundaries = (uint32_t)-1;
+    dim.nBoundaries = uint32_t(-1);
     data = arrayData;
     type = CAM_ARRAY_BASE;
     this->col2featureID = col2featureID;
@@ -233,8 +233,8 @@ enum CAMDataType { CAM_DATA_COLD_START, ACAM_DATA_COLD_START, INVALID_CAMDATA };
 
 class CAMDataBase : public Data {
  protected:
-  uint32_t _rowCams = (uint32_t)-1, _colCams = (uint32_t)-1,
-           _rowSize = (uint32_t)-1, _colSize = (uint32_t)-1;
+  uint32_t _rowCams = uint32_t(-1), _colCams = uint32_t(-1),
+           _rowSize = uint32_t(-1), _colSize = uint32_t(-1);
 
   CAMDataType type = INVALID_CAMDATA;
 
@@ -252,6 +252,8 @@ class CAMDataBase : public Data {
   inline uint32_t getColCams() const { return _colCams; }
   inline uint32_t getRowSize() const { return _rowSize; }
   inline uint32_t getColSize() const { return _colSize; }
+  inline uint64_t getTotalNRow() const { return (uint64_t)_rowCams * _rowSize; }
+  inline uint64_t getTotalNCol() const { return (uint64_t)_colCams * _colSize; }
 
   virtual void initData(CAMArrayBase *camArray) = 0;
   virtual inline CAMArrayBase *at(uint32_t rowNum, uint32_t colNum) const = 0;
@@ -452,8 +454,8 @@ class Dataset {
 
 class QueryData : public Data {
  protected:
-  const uint32_t _colCams = (uint32_t)-1, _nVectors = (uint32_t)-1,
-                 _colSize = (uint32_t)-1;
+  const uint32_t _colCams = uint32_t(-1), _nVectors = uint32_t(-1),
+                 _colSize = uint32_t(-1);
   InputData **camQuries = nullptr;
 
  public:
@@ -473,6 +475,9 @@ class QueryData : public Data {
     return camQuries[colCamIdx];
   }
   inline uint32_t getColCams() const { return _colCams; }
+  inline uint32_t getNVectors() const { return _nVectors; }
+  inline uint32_t getColSize() const { return _colSize; }
+  inline uint64_t getTotalNCol() const { return (uint64_t)_colCams * _colSize; }
 
   ~QueryData() {
     if (camQuries != nullptr) {

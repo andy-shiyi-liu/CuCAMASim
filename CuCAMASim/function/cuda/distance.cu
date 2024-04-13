@@ -1,6 +1,3 @@
-#ifndef DISTANCE_H
-#define DISTANCE_H
-
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include "util/data.h"
@@ -21,5 +18,3 @@ double* softRangePairwise(ACAMArray *camArray, QueryData *queryData){
     throw std::runtime_error("NotImplementedError: Soft range distance is not implemented yet");
     return (double*)nullptr;
 }
-
-#endif
