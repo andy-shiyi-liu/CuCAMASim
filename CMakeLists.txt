@@ -7,6 +7,7 @@ include(CTest)
 enable_testing()
 
 set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 # Set C++ standard to C++17 or later for std::filesystem support
 set(CMAKE_CXX_STANDARD 17)
 

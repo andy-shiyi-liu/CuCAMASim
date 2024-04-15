@@ -20,16 +20,20 @@ enum CAMArrayType {
   INVALID_CAMARRAY
 };
 
+enum RawDataAccessType { FOR_CUDA_MEM_CPY, ILLEGAL_PURPOSE };
+
 class Data {};
+
+struct CAMArrayDim {
+  uint32_t nRows;
+  uint32_t nCols;
+  uint32_t nBoundaries;  // for ACAM
+};
 
 class CAMArrayBase : public Data {
  protected:
   CAMArrayType type = INVALID_CAMARRAY;
-  struct CAMArrayDim {
-    uint32_t nRows;
-    uint32_t nCols;
-    uint32_t nBoundaries;  // for ACAM
-  } dim;
+  struct CAMArrayDim dim;
   double _min = +std::numeric_limits<double>::infinity(),
          _max = -std::numeric_limits<double>::infinity();
   double *data = nullptr;
@@ -58,20 +62,31 @@ class CAMArrayBase : public Data {
     assert(isDimMatch());
   };
 
+  virtual void initData(double initVal) = 0;
   virtual inline double at(uint32_t rowNum, uint32_t colNum) const = 0;
   virtual inline double at(uint32_t rowNum, uint32_t colNum,
                            uint32_t bdNum) const = 0;
   virtual inline void set(uint32_t rowNum, uint32_t colNum, double val) = 0;
   virtual inline void set(uint32_t rowNum, uint32_t colNum, uint32_t bdNum,
                           double val) = 0;
+  virtual inline void toCSV(const std::filesystem::path &outputPath) const = 0;
+  virtual void toCSV(const std::filesystem::path &outputPath,
+                     std::string sep) const = 0;
 
   inline double min() const { return _min; }
   inline double max() const { return _max; }
   inline CAMArrayType getType() const { return type; }
   inline uint32_t getNRows() const { return dim.nRows; }
   inline uint32_t getNCols() const { return dim.nCols; }
+  inline CAMArrayDim getDim() const { return dim; }
   inline bool isDimMatch() const {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
+  }
+  inline const double *getData(RawDataAccessType type) const {
+    assert(data != nullptr && "data is not initialized");
+    assert(type == FOR_CUDA_MEM_CPY &&
+           "direct data access is only for CUDA memory copy!");
+    return data;
   }
   void printDim() const {
     std::cout << "nRows: " << dim.nRows << std::endl;
@@ -114,6 +129,7 @@ class CAMArray : public CAMArrayBase {
     dim.nBoundaries = 1;
   };
   void initData() override;
+  void initData(double initVal) override;
   inline void updateMinMax(double val) override {
     if (!std::isnan(val)) {
       _min = std::min(_min, val);
@@ -146,6 +162,15 @@ class CAMArray : public CAMArrayBase {
     data[index] = val;
     updateMinMax(val);
   }
+
+  inline void toCSV(const std::filesystem::path &outputPath) const override {
+    toCSV(outputPath, ",");
+  }
+  void toCSV(const std::filesystem::path &outputPath,
+             std::string sep) const override {
+    throw std::runtime_error("Please implement me!\n - Called with parameters: " +
+                             std::string(outputPath) + sep);
+  }
 };
 
 // single, coutinuous ACAM array
@@ -159,7 +184,6 @@ class ACAMArray : public CAMArrayBase {
   }
 
  public:
-  void initData() override;
   ACAMArray(uint32_t nRows, uint32_t nCols, double *arrayData,
             std::vector<uint32_t> &col2featureID,
             std::vector<uint32_t> &row2classID)
@@ -177,6 +201,10 @@ class ACAMArray : public CAMArrayBase {
   ACAMArray(uint32_t nRows, uint32_t nCols) : CAMArrayBase(nRows, nCols) {
     dim.nBoundaries = 2;
   }
+
+  void initData() override;
+  void initData(double initVal) override;
+
   inline void set(uint32_t rowNum, uint32_t colNum, double val) override {
     assert(0 && rowNum && colNum && val &&
            "boundary number is needed for ACAMArray");
@@ -201,10 +229,11 @@ class ACAMArray : public CAMArrayBase {
       return data[index];
     }
   }
-  inline void toCSV(const std::filesystem::path &outputPath) const {
+  inline void toCSV(const std::filesystem::path &outputPath) const override {
     toCSV(outputPath, ",");
   }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
+  void toCSV(const std::filesystem::path &outputPath,
+             std::string sep) const override {
     std::ofstream file(outputPath);
     // print col2featureID as column name
     file << sep;
@@ -324,13 +353,15 @@ class ACAMData : public CAMDataBase {
   };
 };
 
+struct InputDataDim {
+  uint32_t nVectors;
+  uint32_t nFeatures;
+};
+
 // for test data in dataset
 class InputData : public Data {
  private:
-  struct InputDataDim {
-    uint32_t nVectors;
-    uint32_t nFeatures;
-  } dim;
+  struct InputDataDim dim;
   double *data = nullptr;
 
  public:
@@ -374,6 +405,13 @@ class InputData : public Data {
 
   inline uint32_t getNVectors() const { return dim.nVectors; }
   inline uint32_t getNFeatures() const { return dim.nFeatures; }
+  inline InputDataDim getDim() const { return dim; }
+  inline const double *getData(RawDataAccessType type) const {
+    assert(data != nullptr && "data is not initialized");
+    assert(type == FOR_CUDA_MEM_CPY &&
+           "direct data access is only for CUDA memory copy!");
+    return data;
+  }
 
   ~InputData() {
     if (data != nullptr) {

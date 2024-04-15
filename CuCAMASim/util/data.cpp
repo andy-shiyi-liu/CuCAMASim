@@ -100,6 +100,13 @@ void CAMArray::initData() {
   }
 }
 
+void CAMArray::initData(double initVal){
+  type = CAM_ARRAY_COLD_START;
+  uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
+  this->data = new double[nElem];
+  memset(this->data, initVal, nElem * sizeof(double));
+}
+
 void ACAMArray::initData() {
   type = ACAM_ARRAY_COLD_START;
   assert(dim.nBoundaries == 2);
@@ -111,6 +118,14 @@ void ACAMArray::initData() {
       set(i, j, 1, +std::numeric_limits<double>::infinity());
     }
   }
+}
+
+void ACAMArray::initData(double initVal) {
+  type = ACAM_ARRAY_COLD_START;
+  assert(dim.nBoundaries == 2);
+  uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
+  this->data = new double[nElem];
+  memset(this->data, initVal, nElem * sizeof(double));
 }
 
 void CAMData::initData(CAMArray* camArray) {
@@ -127,10 +142,10 @@ void ACAMData::initData(ACAMArray* acamArray) {
   uint64_t nElem = _rowCams * _colCams;
   this->camArrays = new ACAMArray*[nElem];
 
-  if (_colCams >1 || _rowCams > 1){
-    std::cerr
-      << "\033[33mWARNING: mapping to multiple cam subarrays is not tested, the result may be wrong.\033[0m"
-      << std::endl;
+  if (_colCams > 1 || _rowCams > 1) {
+    std::cerr << "\033[33mWARNING: mapping to multiple cam subarrays is not "
+                 "tested, the result may be wrong.\033[0m"
+              << std::endl;
   }
 
   // check data size validity
@@ -142,7 +157,7 @@ void ACAMData::initData(ACAMArray* acamArray) {
   // create and init subarrays
   for (uint64_t i = 0; i < nElem; i++) {
     this->camArrays[i] = new ACAMArray(_rowSize, _colSize);
-    this->camArrays[i]->initData();
+    this->camArrays[i]->initData(0.0);
   }
 
   // copy data from acamArray to subarrays
@@ -191,8 +206,6 @@ void ACAMData::initData(ACAMArray* acamArray) {
   // check if the data is valid
   for (uint64_t i = 0; i < nElem; i++) {
     assert(camArrays[i]->getType() == ACAM_ARRAY_COLD_START);
-    camArrays[i]->toCSV("/workspaces/CuCAMASim/subarray" + std::to_string(i) +
-                        ".csv");
     assert(camArrays[i]->isDimMatch());
   }
   // check the consistency of row2classID
@@ -217,18 +230,19 @@ void ACAMData::initData(ACAMArray* acamArray) {
   type = ACAM_DATA_COLD_START;
 }
 
-void QueryData::initData(const InputData* inputData, const CAMDataBase* camData) {
+void QueryData::initData(const InputData* inputData,
+                         const CAMDataBase* camData) {
   assert(_colCams != uint32_t(-1) && _colSize != uint32_t(-1) &&
          _nVectors != uint32_t(-1));
   assert(_colCams == camData->getColCams());
   assert(_colSize == camData->getColSize());
   assert(_nVectors == inputData->getNVectors());
-  if (_colCams >1){
-    std::cerr
-      << "\033[33mWARNING: mapping to multiple colCams is not tested, the result may be wrong.\033[0m"
-      << std::endl;
+  if (_colCams > 1) {
+    std::cerr << "\033[33mWARNING: mapping to multiple colCams is not tested, "
+                 "the result may be wrong.\033[0m"
+              << std::endl;
   }
-  
+
   for (uint32_t colCamIdx = 0; colCamIdx < _colCams; colCamIdx++) {
     for (uint32_t colIdx = 0; colIdx < _colSize; colIdx++) {
       uint32_t featureIdx = camData->at(0, colCamIdx)->col2featureID[colIdx];

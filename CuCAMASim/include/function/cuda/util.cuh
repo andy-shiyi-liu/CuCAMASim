@@ -3,6 +3,7 @@
 
 #include <cuda_runtime.h>
 #include <stdio.h>
+
 #include <iostream>
 
 #define CHECK(call)                                                    \

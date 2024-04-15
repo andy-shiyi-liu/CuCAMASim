@@ -35,6 +35,9 @@ class CAMSearch {
   void defineSearchArea(uint32_t rowCams, uint32_t colCams);
   void search(const CAMDataBase *camData, const QueryData *queryData);
 
+  inline uint32_t getRowCams() const { return _rowCams; };
+  inline uint32_t getColCams() const { return _colCams; };
+
   inline std::string getDistType() const { return distanceType; };
 
   ~CAMSearch() {}

@@ -28,21 +28,13 @@ int main() {
   std::cout << "Exported TreeText:" << std::endl;
   dt.printTree();
   camArray->printDim();
-  camArray->toCSV("/workspaces/CuCAMASim/camArray_beforeConvert.csv");
 
   Dataset *dataset = loadDataset("BTSC_adapted_rand");
-  // Dataset *dataset = loadDataset("test");
-  dataset->testInputs->toCSV("/workspaces/CuCAMASim/testInputs.csv");
-  dataset->testLabels->toCSV("/workspaces/CuCAMASim/testLabels.csv");
-  dataset->trainInputs->toCSV("/workspaces/CuCAMASim/trainInputs.csv");
-  dataset->trainLabels->toCSV("/workspaces/CuCAMASim/trainLabels.csv");
 
   CamConfig camConfig("/workspaces/CuCAMASim/data/config/hard bd.yml");
   CuCAMASim camasim(&camConfig);
 
   camasim.write(camArray);
-  camArray->toCSV("/workspaces/CuCAMASim/camArray_afterConvert.csv");
-
   camasim.query(dataset->testInputs);
 
   if(dataset!= nullptr){

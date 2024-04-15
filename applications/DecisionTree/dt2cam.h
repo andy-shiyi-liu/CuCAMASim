@@ -12,12 +12,12 @@
 
 #include "util/data.h"
 
-enum TreeNodeType { LEAF_NODE, STEM_NODE, INVALID };
+enum TreeNodeType { LEAF_NODE, STEM_NODE, INVALID_NODE };
 
 class TreeNode {
  private:
   TreeNode *parent = nullptr;
-  TreeNodeType type = INVALID;
+  TreeNodeType type = INVALID_NODE;
 
  public:
   virtual TreeNode* getParent() { return parent; }

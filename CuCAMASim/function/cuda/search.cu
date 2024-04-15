@@ -4,6 +4,7 @@
 #include "function/cuda/search.cuh"
 #include "function/cuda/util.cuh"
 #include "util/consts.h"
+#include "util/data.h"
 
 void CAMSearchCUDA(CAMSearch *CAMSearch, const CAMDataBase *camData,
                    const QueryData *queryData) {
@@ -12,38 +13,76 @@ void CAMSearchCUDA(CAMSearch *CAMSearch, const CAMDataBase *camData,
   const uint32_t colCams = camData->getColCams();
   const uint32_t rowSize = camData->getRowSize();
 
+  assert(colCams == CAMSearch->getColCams());
+  assert(camData->getRowCams() == CAMSearch->getRowCams());
+
   uint64_t matchIdxMaxCols = MAX_MATCHED_ROWS * colCams;
-  uint32_t **matchIdx =
-      new2DArray<uint32_t>(nVectors, matchIdxMaxCols, uint32_t(-1));
-  double **matchIdxDist = new2DArray<double>(
-      nVectors, matchIdxMaxCols, std::numeric_limits<double>::quiet_NaN());
+
+  uint32_t *matchIdx_d;
+  uint64_t nBytes = nVectors * matchIdxMaxCols * sizeof(uint32_t);
+  CHECK(cudaMalloc((void **)&matchIdx_d, nBytes));
+
+  double *matchIdxDist_d;
+  nBytes = nVectors * matchIdxMaxCols * sizeof(double);
+  CHECK(cudaMalloc((void **)&matchIdxDist_d, nBytes));
 
   // 1. Search in multiple arrays
   for (uint32_t rowCamIdx = 0; rowCamIdx < camData->getRowCams(); rowCamIdx++) {
     for (uint32_t colCamIdx = 0; colCamIdx < camData->getColCams();
          colCamIdx++) {
-      arraySearch(CAMSearch, camData, queryData, matchIdx, matchIdxDist,
+      arraySearch(CAMSearch, camData, queryData, matchIdx_d, matchIdxDist_d,
                   rowCamIdx, colCamIdx);
     }
   }
 
-  delete2DArray<uint32_t>(matchIdx, nVectors);
-  delete2DArray<double>(matchIdxDist, nVectors);
   cudaDeviceReset();
   std::cerr << "\033[33mWARNING: CAMSearchCUDA() is still under "
                "development\033[0m"
             << CAMSearch << camData << queryData << std::endl;
 }
 
+// for each CAM subarray, search and give the matched index and distance
 void arraySearch(const CAMSearch *CAMSearch, const CAMDataBase *camData,
-                 const QueryData *queryData, uint32_t **matchIdx,
-                 double **matchIdxDist, const uint32_t rowCamIdx,
+                 const QueryData *queryData, uint32_t *matchIdx_d,
+                 double *matchIdxDist_d, const uint32_t rowCamIdx,
                  const uint32_t colCamIdx) {
-  uint32_t rowSize = camData->getRowSize(), colSize = camData->getColSize();
+  // get and check data dimensions
+  uint32_t rowSize = camData->getRowSize(), colSize = camData->getColSize(),
+           nVectors = queryData->getNVectors();
+  CAMArrayDim camDim = camData->at(rowCamIdx, colCamIdx)->getDim();
+  InputDataDim queryDim = queryData->at(colCamIdx)->getDim();
 
-  double **distanceArray = new2DArray<double>(
-      rowSize, colSize, std::numeric_limits<double>::quiet_NaN());
+  assert(camDim.nCols == queryDim.nFeatures);
+  assert(camDim.nCols == rowSize);
+  assert(queryDim.nVectors == nVectors);
+  assert(camDim.nCols == colSize);
 
+  // init data for cuda kernel
+  const double *rawCamData_h =
+      camData->at(rowCamIdx, colCamIdx)->getData(FOR_CUDA_MEM_CPY);
+  double *rawCamData_d;
+  uint64_t nBytes =
+      camDim.nRows * camDim.nCols * camDim.nBoundaries * sizeof(double);
+  CHECK(cudaMalloc((void **)&rawCamData_d, nBytes));
+  CHECK(cudaMemcpy(rawCamData_d, rawCamData_h, nBytes, cudaMemcpyHostToDevice));
+
+  const double *rawQueryData_h =
+      queryData->at(colCamIdx)->getData(FOR_CUDA_MEM_CPY);
+  double *rawQueryData_d;
+  nBytes = nVectors * colSize * sizeof(double);
+  CHECK(cudaMalloc((void **)&rawQueryData_d, nBytes));
+  CHECK(cudaMemcpy(rawQueryData_d, rawQueryData_h, nBytes,
+                   cudaMemcpyHostToDevice));
+
+  // cuda grid and block size
+  nBytes = nVectors * rowSize * sizeof(double);
+  double *distanceArray_d;
+  CHECK(cudaMalloc((void **)&distanceArray_d, nBytes));
+  dim3 block(DIST_FUNC_THREAD_X, DIST_FUNC_THREAD_Y);
+  dim3 grid((long long int)(rowSize - 1) / block.x + 1,
+            (long long int)(nVectors - 1) / block.y + 1);
+
+  // calculate distance according to config
   if (CAMSearch->getDistType() == "euclidean") {
     throw std::runtime_error(
         "NotImplementedError: Euclidean distance is not implemented yet");
@@ -57,14 +96,80 @@ void arraySearch(const CAMSearch *CAMSearch, const CAMDataBase *camData,
     throw std::runtime_error(
         "NotImplementedError: Inner product distance is not implemented yet");
   } else if (CAMSearch->getDistType() == "range") {
-    throw std::runtime_error(
-    "NotImplementedError: Range distance is not implemented yet");
+    // throw std::runtime_error(
+    //     "NotImplementedError: Range distance is not implemented yet");
+    if (camDim.nBoundaries != 2) {
+      throw std::runtime_error(
+          "Range distance requires ACAM, with 2 boundaries per cell!");
+    }
+    rangeQueryPairwise<<<grid, block>>>(rawCamData_d, rawQueryData_d,
+                                        distanceArray_d, camDim, queryDim);
   } else if (CAMSearch->getDistType() == "softRange") {
     throw std::runtime_error(
         "NotImplementedError: Soft range distance is not implemented yet");
   } else {
     throw std::runtime_error("NotImplementedError: Unknown distance type");
   }
+
+  // for debug
+  double *distanceArray_h = new double[nVectors * rowSize];
+  CHECK(cudaMemcpy(distanceArray_h, distanceArray_d, nBytes,
+                   cudaMemcpyDeviceToHost));
+
+  // export distanceArray_h to csv file
+  std::ofstream file("/workspaces/CuCAMASim/distances.csv");
+  file << ",";
+  for (uint32_t i = 0; i < rowSize; i++) {
+    file << i << ",";
+  }
+  file << std::endl;
+  for (uint32_t i = 0; i < nVectors; i++) {
+    file << i << ",";
+    for (uint32_t j = 0; j < rowSize; j++) {
+      file << distanceArray_h[i * rowSize + j] << ",";
+    }
+    file << std::endl;
+  }
+  file.close();
+
+  // export rawCamData_h to csv file
+  std::ofstream file2("/workspaces/CuCAMASim/rawCamData.csv");
+  // print col2featureID as column name
+  file2 << ",";
+  for (uint32_t i = 0; i < colSize; i++) {
+    file2 << "col_" << i << ",";
+  }
+  file2 << "classID" << std::endl;
+  for (uint32_t i = 0; i < rowSize; i++) {
+    file2 << "row_" << i << ",";
+    for (uint32_t j = 0; j < colSize; j++) {
+      uint64_t lowerBdIdx = 0 + 2 * (j + colSize * i);
+      uint64_t upperBdIdx = 1 + 2 * (j + colSize * i);
+      file2 << rawCamData_h[lowerBdIdx]
+            << " < x <= " << rawCamData_h[upperBdIdx] << ",";
+    }
+    file2 << std::endl;
+  }
+  file2.close();
+
+  camData->at(rowCamIdx, colCamIdx)
+      ->toCSV("/workspaces/CuCAMASim/camArray.csv");
+
+  // export rawQueryData_h to csv file
+  std::ofstream file3("/workspaces/CuCAMASim/rawQueryData.csv");
+  file3 << ",";
+  for (uint32_t i = 0; i < colSize; i++) {
+    file3 << i << ",";
+  }
+  file3 << std::endl;
+  for (uint32_t i = 0; i < nVectors; i++) {
+    file3 << i << ",";
+    for (uint32_t j = 0; j < colSize; j++) {
+      file3 << rawQueryData_h[i * colSize + j] << ",";
+    }
+    file3 << std::endl;
+  }
+  exit(0);
 
   std::cerr << "\033[33mWARNING: arraySearch() is still under "
                "development\033[0m"

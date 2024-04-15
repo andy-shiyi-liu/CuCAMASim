@@ -11,8 +11,8 @@ void CAMSearchCUDA(CAMSearch *CAMSearch, const CAMDataBase *camData,
                    const QueryData *queryData);
 
 void arraySearch(const CAMSearch *CAMSearch, const CAMDataBase *camData,
-                 const QueryData *queryData, uint32_t **matchIdx,
-                 double **matchIdxDist, const uint32_t rowCamIdx,
+                 const QueryData *queryData, uint32_t *matchIdx_d,
+                 double *matchIdxDist_d, const uint32_t rowCamIdx,
                  const uint32_t colCamIdx);
 
 template <typename T>
