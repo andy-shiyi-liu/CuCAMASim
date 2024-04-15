@@ -37,8 +37,12 @@ class CAMSearch {
 
   inline uint32_t getRowCams() const { return _rowCams; };
   inline uint32_t getColCams() const { return _colCams; };
-
   inline std::string getDistType() const { return distanceType; };
+  inline std::string getSearchScheme() const { return searchScheme; };
+  inline double getSearchParameter() const { return searchParameter; };
+  inline std::string getSensing() const { return sensing; };
+  inline double getSensingLimit() const { return sensingLimit; };
+
 
   ~CAMSearch() {}
 };

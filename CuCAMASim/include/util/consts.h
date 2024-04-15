@@ -11,5 +11,7 @@
 //    blocks, where each block is a 2D grid of threads
 #define DIST_FUNC_THREAD_X 1       // for debug, set to 32 after debug
 #define DIST_FUNC_THREAD_Y 1       // for debug, set to 32 after debug
+//  - when sensing, we launch a 1D grid of blocks, where each block is a 1D grid of threads
+#define SENSING_THREAD_X 1          // for debug, set to 1024 after debug
 
 #endif

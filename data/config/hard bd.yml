@@ -1,6 +1,6 @@
 arch:
-  ArraysPerMat: 4
   MatsPerBank: 4
+  ArraysPerMat: 4
   SubarraysPerArray: 4
 array:
   bit: 3
