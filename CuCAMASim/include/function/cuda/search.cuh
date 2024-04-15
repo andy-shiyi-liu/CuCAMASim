@@ -7,13 +7,17 @@
 #include "function/search.h"
 #include "util/data.h"
 
-void CAMSearchCUDA(CAMSearch *CAMSearch, const CAMDataBase *camData,
-                   const QueryData *queryData);
+void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
+                   const QueryData *queryData, SimResult *simResult);
 
-void arraySearch(const CAMSearch *CAMSearch, const CAMDataBase *camData,
+void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
                  const QueryData *queryData, uint32_t *matchIdx_d,
                  double *matchIdxDist_d, const uint32_t rowCamIdx,
                  const uint32_t colCamIdx);
+
+void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
+                  const double *matchIdxDist_d, uint32_t *result_d,
+                  const uint32_t nVectors, const uint32_t colCams);
 
 template <typename T>
 T **new2DArray(const uint32_t row, const uint32_t col, T initValue) {

@@ -33,7 +33,7 @@ class FunctionSimulator {
   }
 
   void write(CAMArrayBase *camArray);
-  void query(InputData *inputData);
+  void query(InputData *inputData, SimResult *simResult);
 
   ~FunctionSimulator() {
     delete quantizer;

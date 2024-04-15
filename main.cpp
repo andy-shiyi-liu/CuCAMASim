@@ -35,7 +35,7 @@ int main() {
   CuCAMASim camasim(&camConfig);
 
   camasim.write(camArray);
-  camasim.query(dataset->testInputs);
+  camasim.query(dataset->testInputs, camasim.getSimResult());
 
   if(dataset!= nullptr){
     delete dataset;

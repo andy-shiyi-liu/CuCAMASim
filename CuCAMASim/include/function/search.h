@@ -33,7 +33,8 @@ class CAMSearch {
   }
 
   void defineSearchArea(uint32_t rowCams, uint32_t colCams);
-  void search(const CAMDataBase *camData, const QueryData *queryData);
+  void search(const CAMDataBase *camData, const QueryData *queryData,
+              SimResult *simResult);
 
   inline uint32_t getRowCams() const { return _rowCams; };
   inline uint32_t getColCams() const { return _colCams; };
@@ -42,7 +43,6 @@ class CAMSearch {
   inline double getSearchParameter() const { return searchParameter; };
   inline std::string getSensing() const { return sensing; };
   inline double getSensingLimit() const { return sensingLimit; };
-
 
   ~CAMSearch() {}
 };

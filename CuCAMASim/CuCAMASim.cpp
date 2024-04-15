@@ -24,12 +24,12 @@ void CuCAMASim::write(CAMArrayBase *camArray) {
   std::cout << "CuCAMASim::write() done" << std::endl;
 }
 
-void CuCAMASim::query(InputData *inputData) {
+void CuCAMASim::query(InputData *inputData,SimResult *simResult) {
   std::cout << "*** Query CAM Arrays ***" << std::endl;
 
   // Function Simulation
   if (config->queryConfig->funcSim == true) {
-    functionSimulator->query(inputData);
+    functionSimulator->query(inputData, simResult);
   }
   if (config->queryConfig->perfEval == true) {
     throw std::runtime_error("Performance Evaluation is not supported yet");

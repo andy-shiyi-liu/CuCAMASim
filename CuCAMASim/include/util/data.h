@@ -11,6 +11,20 @@
 #include <map>
 #include <vector>
 
+class SimResult {
+ private:
+  struct {
+    double latency = 0.0, energy = 0.0;
+    bool valid = false;
+  } perf;
+  struct {
+    bool valid = false;
+  } func;
+
+ public:
+  SimResult(){};
+};
+
 enum CAMArrayType {
   CAM_ARRAY_COLD_START,
   CAM_ARRAY_EXISTING_DATA,
@@ -168,8 +182,9 @@ class CAMArray : public CAMArrayBase {
   }
   void toCSV(const std::filesystem::path &outputPath,
              std::string sep) const override {
-    throw std::runtime_error("Please implement me!\n - Called with parameters: " +
-                             std::string(outputPath) + sep);
+    throw std::runtime_error(
+        "Please implement me!\n - Called with parameters: " +
+        std::string(outputPath) + sep);
   }
 };
 

@@ -21,7 +21,7 @@ void CAMSearch::defineSearchArea(uint32_t rowCams, uint32_t colCams) {
 // Searches in multiple CAM arrays, merges results, and returns a list of search
 // results. The operation of this function is designed to be performed in GPU.
 void CAMSearch::search(const CAMDataBase *camData,
-                       const QueryData *queryData) {
+                       const QueryData *queryData, SimResult *simResult) {
   assert(camData->getTotalNCol() == queryData->getTotalNCol());
   assert(camData->getColSize() == queryData->getColSize());
   assert(camData->getColCams() == queryData->getColCams());
@@ -29,7 +29,7 @@ void CAMSearch::search(const CAMDataBase *camData,
   assert(_rowCams == camData->getRowCams());
   assert(arrayConfig->row == camData->getRowSize());
 
-  CAMSearchCUDA(this, camData, queryData);
+  CAMSearchCUDA(this, camData, queryData, simResult);
   
   std::cerr << "\033[33mWARNING: CAMSearch::search() is still under "
                "development\033[0m"

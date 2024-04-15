@@ -9,24 +9,13 @@
 #include "util/config.h"
 #include "util/data.h"
 
-class SimResult {
- public:
-  struct {
-    double latency, energy;
-    bool valid = false;
-  } perf;
-  struct {
-    bool valid = false;
-  } func;
-};
-
 class CuCAMASim {
  private:
   CamConfig *config;
   FunctionSimulator *functionSimulator;
   ArchEstimator *archEstimator;
   PerformanceEvaluator *performanceEvaluator;
-  SimResult simResult;
+  SimResult *simResult;
 
  public:
   CuCAMASim(CamConfig *camConfig) : config(camConfig) {
@@ -34,10 +23,13 @@ class CuCAMASim {
     functionSimulator = new FunctionSimulator(camConfig);
     archEstimator = new ArchEstimator(camConfig);
     performanceEvaluator = new PerformanceEvaluator();
+    simResult = new SimResult();
     std::cout << "CuCAMASim() done" << std::endl;
   };
   void write(CAMArrayBase *camArray);
-  void query(InputData *inputData);
+  void query(InputData *inputData, SimResult *simResult);
+
+  inline SimResult *getSimResult() const { return simResult; };
 
   ~CuCAMASim() {
     delete functionSimulator;
@@ -46,6 +38,8 @@ class CuCAMASim {
     archEstimator = nullptr;
     delete performanceEvaluator;
     performanceEvaluator = nullptr;
+    delete simResult;
+    simResult = nullptr;
   };
 };
 #endif
