@@ -10,7 +10,7 @@
 
 void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
                    const QueryData *queryData, SimResult *simResult) {
-  initDevice(0);
+  initDevice(GPU_DEVICE_ID);
   const uint32_t nVectors = queryData->getNVectors();
   const uint32_t rowCams = camData->getRowCams();
   const uint32_t colCams = camData->getColCams();
@@ -191,8 +191,23 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   nBytes = nVectors * rowSize * sizeof(double);
   assert(*distanceArray_d == nullptr);
   CHECK(cudaMalloc((void **)distanceArray_d, nBytes));
+  CHECK(cudaMemset(*distanceArray_d, 255, nBytes));
 
   // cuda grid and block size
+  cudaDeviceProp deviceProp;
+  cudaGetDeviceProperties(&deviceProp, GPU_DEVICE_ID); // assuming device 0, adjust as needed
+  if (DIST_FUNC_THREAD_X * DIST_FUNC_THREAD_Y >
+      deviceProp.maxThreadsPerBlock) {
+    throw std::runtime_error(
+        "The number of threads per block exceeds the limit. Conside decrease "
+        "DIST_FUNC_THREAD_X and/or DIST_FUNC_THREAD_Y. Current "
+        "DIST_FUNC_THREAD_X=" +
+        std::to_string(DIST_FUNC_THREAD_X) +
+        ", DIST_FUNC_THREAD_Y=" + std::to_string(DIST_FUNC_THREAD_Y) +
+        ", current thread per block: " + std::to_string(DIST_FUNC_THREAD_Y) +
+        ",max threads per block supported=" +
+        std::to_string(deviceProp.maxThreadsPerBlock));
+  }
   dim3 block4Dist(DIST_FUNC_THREAD_X, DIST_FUNC_THREAD_Y);
   dim3 grid4Dist((long long int)(rowSize - 1) / block4Dist.x + 1,
                  (long long int)(nVectors - 1) / block4Dist.y + 1);
@@ -228,6 +243,27 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
     throw std::runtime_error("NotImplementedError: Unknown distance type");
   }
 
+  // // for debug
+  double *distanceArray_h = new double[nVectors * rowSize];
+  CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
+                   cudaMemcpyDeviceToHost));
+
+  // export distanceArray_h to csv file
+  std::ofstream file("/workspaces/CuCAMASim/distances.csv");
+  file << ",";
+  for (uint32_t i = 0; i < rowSize; i++) {
+    file << i << ",";
+  }
+  file << std::endl;
+  for (uint32_t i = 0; i < nVectors; i++) {
+    file << i << ",";
+    for (uint32_t j = 0; j < rowSize; j++) {
+      file << distanceArray_h[i * rowSize + j] << ",";
+    }
+    file << std::endl;
+  }
+  file.close();
+
   // 2. Find the output IDs of the array
   dim3 block4Sensing(SENSING_THREAD_X);
   dim3 grid4Sensing((nVectors - 1) / block4Sensing.x +
@@ -251,25 +287,6 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   }
 
   // // for debug
-  // double *distanceArray_h = new double[nVectors * rowSize];
-  // CHECK(cudaMemcpy(distanceArray_h, distanceArray_d, nBytes,
-  //                  cudaMemcpyDeviceToHost));
-
-  // // export distanceArray_h to csv file
-  // std::ofstream file("/workspaces/CuCAMASim/distances.csv");
-  // file << ",";
-  // for (uint32_t i = 0; i < rowSize; i++) {
-  //   file << i << ",";
-  // }
-  // file << std::endl;
-  // for (uint32_t i = 0; i < nVectors; i++) {
-  //   file << i << ",";
-  //   for (uint32_t j = 0; j < rowSize; j++) {
-  //     file << distanceArray_h[i * rowSize + j] << ",";
-  //   }
-  //   file << std::endl;
-  // }
-  // file.close();
 
   // // export rawCamData_h to csv file
   // std::ofstream file2("/workspaces/CuCAMASim/rawCamData.csv");
