@@ -244,25 +244,25 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   }
 
   // // for debug
-  double *distanceArray_h = new double[nVectors * rowSize];
-  CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
-                   cudaMemcpyDeviceToHost));
+  // double *distanceArray_h = new double[nVectors * rowSize];
+  // CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
+  //                  cudaMemcpyDeviceToHost));
 
-  // export distanceArray_h to csv file
-  std::ofstream file("/workspaces/CuCAMASim/distances.csv");
-  file << ",";
-  for (uint32_t i = 0; i < rowSize; i++) {
-    file << i << ",";
-  }
-  file << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file << i << ",";
-    for (uint32_t j = 0; j < rowSize; j++) {
-      file << distanceArray_h[i * rowSize + j] << ",";
-    }
-    file << std::endl;
-  }
-  file.close();
+  // // export distanceArray_h to csv file
+  // std::ofstream file("/workspaces/CuCAMASim/distances.csv");
+  // file << ",";
+  // for (uint32_t i = 0; i < rowSize; i++) {
+  //   file << i << ",";
+  // }
+  // file << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file << i << ",";
+  //   for (uint32_t j = 0; j < rowSize; j++) {
+  //     file << distanceArray_h[i * rowSize + j] << ",";
+  //   }
+  //   file << std::endl;
+  // }
+  // file.close();
 
   // 2. Find the output IDs of the array
   dim3 block4Sensing(SENSING_THREAD_X);
