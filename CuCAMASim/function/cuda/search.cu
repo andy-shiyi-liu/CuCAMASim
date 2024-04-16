@@ -12,11 +12,15 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
                    const QueryData *queryData, SimResult *simResult) {
   initDevice(0);
   const uint32_t nVectors = queryData->getNVectors();
+  const uint32_t rowCams = camData->getRowCams();
   const uint32_t colCams = camData->getColCams();
   const uint32_t rowSize = camData->getRowSize();
+  const uint64_t nCamSubarrays = rowCams * colCams;
 
   assert(colCams == camSearch->getColCams());
+  assert(rowCams == camSearch->getRowCams());
   assert(camData->getRowCams() == camSearch->getRowCams());
+  assert(camData->getColCams() == camSearch->getColCams());
 
   uint64_t matchIdxMaxCols = MAX_MATCHED_ROWS * colCams;
 
@@ -37,12 +41,42 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
                             // not a matched row, the distance would be -nan
 
   // 1. Search in multiple arrays
-  for (uint32_t rowCamIdx = 0; rowCamIdx < camData->getRowCams(); rowCamIdx++) {
-    for (uint32_t colCamIdx = 0; colCamIdx < camData->getColCams();
-         colCamIdx++) {
+  cudaStream_t streams[nCamSubarrays];
+  double *rawCamDataAll_d[nCamSubarrays] = {nullptr};
+  double *rawQueryDataAll_d[nCamSubarrays] = {nullptr};
+  double *distanceArrayAll_d[nCamSubarrays] = {nullptr};
+  uint32_t *errorCodeAll_d[nCamSubarrays] = {nullptr};
+  for (uint32_t rowCamIdx = 0; rowCamIdx < rowCams; rowCamIdx++) {
+    for (uint32_t colCamIdx = 0; colCamIdx < colCams; colCamIdx++) {
+      uint64_t camSubarrayIdx = rowCamIdx * colCams + colCamIdx;
+      // for parallel search in multiple subarrays, we need to create all the
+      // resources needed here and pass it into the kernel
+      CHECK(cudaStreamCreate(&streams[camSubarrayIdx]));
       arraySearch(camSearch, camData, queryData, matchIdx_d, matchIdxDist_d,
-                  rowCamIdx, colCamIdx);
+                  &rawCamDataAll_d[camSubarrayIdx],
+                  &rawQueryDataAll_d[camSubarrayIdx],
+                  &distanceArrayAll_d[camSubarrayIdx], rowCamIdx, colCamIdx,
+                  streams[camSubarrayIdx], &errorCodeAll_d[camSubarrayIdx]);
     }
+  }
+  // Synchronize and delete all streams
+  for (int i = 0; i < nCamSubarrays; i++) {
+    cudaStreamSynchronize(streams[i]);
+    cudaStreamDestroy(streams[i]);
+    uint32_t errorCode = 0;
+    // check error code
+    CHECK(cudaMemcpy(&errorCode, errorCodeAll_d[i], sizeof(uint32_t),
+                     cudaMemcpyDeviceToHost));
+    switch (errorCode) {
+      case 1:
+        throw std::runtime_error(
+            "Error: more than " + std::to_string(MAX_MATCHED_ROWS) +
+            " rows matched. Please increase MAX_MATCHED_ROWS in "
+            "<CuCAMASim dir>/include/util/consts.h");
+    }
+    CHECK(cudaFree(rawCamDataAll_d[i]));
+    CHECK(cudaFree(rawQueryDataAll_d[i]));
+    CHECK(cudaFree(distanceArrayAll_d[i]));
   }
 
   // 2. Merge results from multiple arrays
@@ -57,6 +91,7 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
   mergeIndices(camSearch, matchIdx_d, matchIdxDist_d, result_d, nVectors,
                colCams);
 
+  // sync and free resources
   CHECK(cudaDeviceSynchronize());
   CHECK(cudaFree(matchIdx_d));
   CHECK(cudaFree(matchIdxDist_d));
@@ -121,8 +156,10 @@ void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
 // for each CAM subarray, search and give the matched index and distance
 void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
                  const QueryData *queryData, uint32_t *matchIdx_d,
-                 double *matchIdxDist_d, const uint32_t rowCamIdx,
-                 const uint32_t colCamIdx) {
+                 double *matchIdxDist_d, double **rawCamData_d,
+                 double **rawQueryData_d, double **distanceArray_d,
+                 const uint32_t rowCamIdx, const uint32_t colCamIdx,
+                 const cudaStream_t &stream, uint32_t **errorCode_d) {
   // get and check data dimensions
   const uint32_t rowSize = camData->getRowSize(),
                  colSize = camData->getColSize(),
@@ -138,31 +175,31 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   // init data for cuda kernel
   const double *rawCamData_h =
       camData->at(rowCamIdx, colCamIdx)->getData(FOR_CUDA_MEM_CPY);
-  double *rawCamData_d;
   uint64_t nBytes =
       camDim.nRows * camDim.nCols * camDim.nBoundaries * sizeof(double);
-  CHECK(cudaMalloc((void **)&rawCamData_d, nBytes));
-  CHECK(cudaMemcpy(rawCamData_d, rawCamData_h, nBytes, cudaMemcpyHostToDevice));
+  assert(*rawCamData_d == nullptr);
+  CHECK(cudaMalloc((void **)rawCamData_d, nBytes));
+  CHECK(
+      cudaMemcpy(*rawCamData_d, rawCamData_h, nBytes, cudaMemcpyHostToDevice));
 
   const double *rawQueryData_h =
       queryData->at(colCamIdx)->getData(FOR_CUDA_MEM_CPY);
-  double *rawQueryData_d;
   nBytes = nVectors * colSize * sizeof(double);
-  CHECK(cudaMalloc((void **)&rawQueryData_d, nBytes));
-  CHECK(cudaMemcpy(rawQueryData_d, rawQueryData_h, nBytes,
+  assert(*rawQueryData_d == nullptr);
+  CHECK(cudaMalloc((void **)rawQueryData_d, nBytes));
+  CHECK(cudaMemcpy(*rawQueryData_d, rawQueryData_h, nBytes,
                    cudaMemcpyHostToDevice));
 
-  // cuda grid and block size
   nBytes = nVectors * rowSize * sizeof(double);
-  double *distanceArray_d;
-  CHECK(cudaMalloc((void **)&distanceArray_d, nBytes));
+  assert(*distanceArray_d == nullptr);
+  CHECK(cudaMalloc((void **)distanceArray_d, nBytes));
+
+  // cuda grid and block size
   dim3 block4Dist(DIST_FUNC_THREAD_X, DIST_FUNC_THREAD_Y);
   dim3 grid4Dist((long long int)(rowSize - 1) / block4Dist.x + 1,
                  (long long int)(nVectors - 1) / block4Dist.y + 1);
 
   // create cuda stream for sequential execution of kernels
-  cudaStream_t stream;
-  CHECK(cudaStreamCreate(&stream));
 
   // 1. Calculate the distance matrix in the array
   if (camSearch->getDistType() == "euclidean") {
@@ -185,7 +222,7 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
           "Range distance requires ACAM, with 2 boundaries per cell!");
     }
     rangeQueryPairwise<<<grid4Dist, block4Dist, 0, stream>>>(
-        rawCamData_d, rawQueryData_d, distanceArray_d, camDim, queryDim);
+        *rawCamData_d, *rawQueryData_d, *distanceArray_d, camDim, queryDim);
   } else if (camSearch->getDistType() == "softRange") {
     throw std::runtime_error(
         "NotImplementedError: Soft range distance is not implemented yet");
@@ -197,14 +234,13 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   dim3 block4Sensing(SENSING_THREAD_X);
   dim3 grid4Sensing((nVectors - 1) / block4Sensing.x +
                     1);  // we need #nVectors threads
-  uint32_t errorCode = 0, *errorCode_d = nullptr;
-  CHECK(cudaMalloc((void **)&errorCode_d, sizeof(uint32_t)));
-  CHECK(cudaMemcpy(errorCode_d, &errorCode, sizeof(uint32_t),
-                   cudaMemcpyHostToDevice));
+
+  CHECK(cudaMalloc((void **)errorCode_d, sizeof(uint32_t)));
+  CHECK(cudaMemset(*errorCode_d, 0, 1 * sizeof(uint32_t)));
   if (camSearch->getSensing() == "exact") {
     getArrayExactResults<<<grid4Sensing, block4Sensing, 0, stream>>>(
-        distanceArray_d, matchIdx_d, matchIdxDist_d, camDim, queryDim,
-        rowCamIdx, colCamIdx, camData->getColCams(), errorCode_d);
+        *distanceArray_d, matchIdx_d, matchIdxDist_d, camDim, queryDim,
+        rowCamIdx, colCamIdx, camData->getColCams(), *errorCode_d);
   } else if (camSearch->getSensing() == "best") {
     throw std::runtime_error(
         "NotImplementedError: Best sensing is not implemented yet");
@@ -214,20 +250,6 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   } else {
     throw std::runtime_error("NotImplementedError: Unknown sensing type");
   }
-  // check error code
-  CHECK(cudaMemcpy(&errorCode, errorCode_d, sizeof(uint32_t),
-                   cudaMemcpyDeviceToHost));
-  switch (errorCode) {
-    case 1:
-      throw std::runtime_error("Error: more than " +
-                               std::to_string(MAX_MATCHED_ROWS) +
-                               " matched. Please increase MAX_MATCHED_ROWS in "
-                               "<CuCAMASim dir>/include/util/consts.h");
-  }
-  // Synchronize stream
-  CHECK(cudaStreamSynchronize(stream);)
-  // Destroy stream
-  CHECK(cudaStreamDestroy(stream);)
 
   // // for debug
   // double *distanceArray_h = new double[nVectors * rowSize];
@@ -339,9 +361,4 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   // std::cerr << "\033[33mWARNING: arraySearch() is still under "
   //              "development\033[0m"
   //           << camSearch << camData << queryData << std::endl;
-
-  // free GPU memory
-  CHECK(cudaFree(rawCamData_d));
-  CHECK(cudaFree(rawQueryData_d));
-  CHECK(cudaFree(distanceArray_d));
 }

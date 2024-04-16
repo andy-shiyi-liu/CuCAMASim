@@ -14,5 +14,6 @@ Using dev container is recommended. Steps:
 ## Todo
 - finish CuCAMASim::query()
   - save results to simResult
-  - change stream settings for arraySearch()
+  - change data allocation and free location
+  - change error code copy location
 - init PerformanceEvaluator

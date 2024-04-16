@@ -12,8 +12,10 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
 
 void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
                  const QueryData *queryData, uint32_t *matchIdx_d,
-                 double *matchIdxDist_d, const uint32_t rowCamIdx,
-                 const uint32_t colCamIdx);
+                 double *matchIdxDist_d, double **rawCamData_d,
+                 double **rawQueryData_d, double **distanceArray_d,
+                 const uint32_t rowCamIdx, const uint32_t colCamIdx,
+                 const cudaStream_t &stream, uint32_t **errorCode_d);
 
 void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
                   const double *matchIdxDist_d, uint32_t *result_d,
