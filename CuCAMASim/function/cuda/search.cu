@@ -73,6 +73,7 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
             "Error: more than " + std::to_string(MAX_MATCHED_ROWS) +
             " rows matched. Please increase MAX_MATCHED_ROWS in "
             "<CuCAMASim dir>/include/util/consts.h");
+        break;
     }
     CHECK(cudaFree(rawCamDataAll_d[i]));
     CHECK(cudaFree(rawQueryDataAll_d[i]));
@@ -106,9 +107,6 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
   delete result_h;
 
   cudaDeviceReset();
-  std::cerr << "\033[33mWARNING: CAMSearchCUDA() is still under "
-               "development\033[0m"
-            << camSearch << camData << queryData << std::endl;
 }
 
 void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
@@ -235,6 +233,7 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   dim3 grid4Sensing((nVectors - 1) / block4Sensing.x +
                     1);  // we need #nVectors threads
 
+  assert(*errorCode_d == nullptr);
   CHECK(cudaMalloc((void **)errorCode_d, sizeof(uint32_t)));
   CHECK(cudaMemset(*errorCode_d, 0, 1 * sizeof(uint32_t)));
   if (camSearch->getSensing() == "exact") {

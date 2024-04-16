@@ -30,8 +30,4 @@ void CAMSearch::search(const CAMDataBase *camData,
   assert(arrayConfig->row == camData->getRowSize());
 
   CAMSearchCUDA(this, camData, queryData, simResult);
-  
-  std::cerr << "\033[33mWARNING: CAMSearch::search() is still under "
-               "development\033[0m"
-            << camData << queryData << std::endl;
 };

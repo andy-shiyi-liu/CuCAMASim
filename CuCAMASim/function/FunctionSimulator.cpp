@@ -41,8 +41,4 @@ void FunctionSimulator::query(InputData *inputData, SimResult *simResult) {
   // 4. Searching in each array and merging results
   search->defineSearchArea(mapping->getRowCams(), mapping->getColCams());
   search->search(mapping->getCamData(), mapping->getQueryData(), simResult);
-
-  std::cerr << "\033[33mWARNING: FunctionSimulator::query() is still under "
-               "development\033[0m"
-            << std::endl;
 }
