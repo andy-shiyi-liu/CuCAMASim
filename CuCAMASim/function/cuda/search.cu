@@ -57,6 +57,19 @@ void CAMSearchCUDA(CAMSearch *camSearch, const CAMDataBase *camData,
   mergeIndices(camSearch, matchIdx_d, matchIdxDist_d, result_d, nVectors,
                colCams);
 
+  CHECK(cudaDeviceSynchronize());
+  CHECK(cudaFree(matchIdx_d));
+  CHECK(cudaFree(matchIdxDist_d));
+
+  // 3. write result from GPU to simResult
+  uint32_t *result_h = new uint32_t[nVectors * MAX_MATCHED_ROWS];
+  CHECK(cudaMemcpy(result_h, result_d, nBytes, cudaMemcpyDeviceToHost));
+  CHECK(cudaFree(result_d));
+
+  simResult->writeFuncSimResult(result_h, nVectors, MAX_MATCHED_ROWS);
+
+  delete result_h;
+
   cudaDeviceReset();
   std::cerr << "\033[33mWARNING: CAMSearchCUDA() is still under "
                "development\033[0m"
@@ -83,31 +96,26 @@ void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
     throw std::runtime_error("NotImplementedError: Unknown merge scheme");
   }
 
-  // for debug
-  // export result_d to csv file
-  uint32_t *result_h = new uint32_t[nVectors * MAX_MATCHED_ROWS * 1];
-  CHECK(cudaMemcpy(result_h, result_d,
-                   nVectors * MAX_MATCHED_ROWS * 1 * sizeof(uint32_t),
-                   cudaMemcpyDeviceToHost));
-  std::ofstream file5("/workspaces/CuCAMASim/result.csv");
-  file5 << ",";
-  for (uint32_t i = 0; i < MAX_MATCHED_ROWS * 1; i++) {
-    file5 << i << ",";
-  }
-  file5 << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file5 << i << ",";
-    for (uint32_t j = 0; j < MAX_MATCHED_ROWS * 1; j++) {
-      file5 << result_h[j + MAX_MATCHED_ROWS * 1 * i] << ",";
-    }
-    file5 << std::endl;
-  }
-  file5.close();
-
-  std::cerr
-      << "\033[33mWARNING: mergeIndices() is still under development\033[0m"
-      << matchIdx_d << matchIdxDist_d << result_d << nVectors << colCams
-      << std::endl;
+  // // for debug
+  // // export result_d to csv file
+  // uint32_t *result_h = new uint32_t[nVectors * MAX_MATCHED_ROWS * 1];
+  // CHECK(cudaMemcpy(result_h, result_d,
+  //                  nVectors * MAX_MATCHED_ROWS * 1 * sizeof(uint32_t),
+  //                  cudaMemcpyDeviceToHost));
+  // std::ofstream file5("/workspaces/CuCAMASim/result.csv");
+  // file5 << ",";
+  // for (uint32_t i = 0; i < MAX_MATCHED_ROWS * 1; i++) {
+  //   file5 << i << ",";
+  // }
+  // file5 << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file5 << i << ",";
+  //   for (uint32_t j = 0; j < MAX_MATCHED_ROWS * 1; j++) {
+  //     file5 << result_h[j + MAX_MATCHED_ROWS * 1 * i] << ",";
+  //   }
+  //   file5 << std::endl;
+  // }
+  // file5.close();
 }
 
 // for each CAM subarray, search and give the matched index and distance
@@ -217,117 +225,123 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
                                "<CuCAMASim dir>/include/util/consts.h");
   }
   // Synchronize stream
-  cudaStreamSynchronize(stream);
+  CHECK(cudaStreamSynchronize(stream);)
   // Destroy stream
-  cudaStreamDestroy(stream);
+  CHECK(cudaStreamDestroy(stream);)
 
-  // for debug
-  double *distanceArray_h = new double[nVectors * rowSize];
-  CHECK(cudaMemcpy(distanceArray_h, distanceArray_d, nBytes,
-                   cudaMemcpyDeviceToHost));
+  // // for debug
+  // double *distanceArray_h = new double[nVectors * rowSize];
+  // CHECK(cudaMemcpy(distanceArray_h, distanceArray_d, nBytes,
+  //                  cudaMemcpyDeviceToHost));
 
-  // export distanceArray_h to csv file
-  std::ofstream file("/workspaces/CuCAMASim/distances.csv");
-  file << ",";
-  for (uint32_t i = 0; i < rowSize; i++) {
-    file << i << ",";
-  }
-  file << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file << i << ",";
-    for (uint32_t j = 0; j < rowSize; j++) {
-      file << distanceArray_h[i * rowSize + j] << ",";
-    }
-    file << std::endl;
-  }
-  file.close();
+  // // export distanceArray_h to csv file
+  // std::ofstream file("/workspaces/CuCAMASim/distances.csv");
+  // file << ",";
+  // for (uint32_t i = 0; i < rowSize; i++) {
+  //   file << i << ",";
+  // }
+  // file << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file << i << ",";
+  //   for (uint32_t j = 0; j < rowSize; j++) {
+  //     file << distanceArray_h[i * rowSize + j] << ",";
+  //   }
+  //   file << std::endl;
+  // }
+  // file.close();
 
-  // export rawCamData_h to csv file
-  std::ofstream file2("/workspaces/CuCAMASim/rawCamData.csv");
-  // print col2featureID as column name
-  file2 << ",";
-  for (uint32_t i = 0; i < colSize; i++) {
-    file2 << "col_" << i << ",";
-  }
-  file2 << "classID" << std::endl;
-  for (uint32_t i = 0; i < rowSize; i++) {
-    file2 << "row_" << i << ",";
-    for (uint32_t j = 0; j < colSize; j++) {
-      uint64_t lowerBdIdx = 0 + 2 * (j + colSize * i);
-      uint64_t upperBdIdx = 1 + 2 * (j + colSize * i);
-      file2 << rawCamData_h[lowerBdIdx]
-            << " < x <= " << rawCamData_h[upperBdIdx] << ",";
-    }
-    file2 << std::endl;
-  }
-  file2.close();
+  // // export rawCamData_h to csv file
+  // std::ofstream file2("/workspaces/CuCAMASim/rawCamData.csv");
+  // // print col2featureID as column name
+  // file2 << ",";
+  // for (uint32_t i = 0; i < colSize; i++) {
+  //   file2 << "col_" << i << ",";
+  // }
+  // file2 << "classID" << std::endl;
+  // for (uint32_t i = 0; i < rowSize; i++) {
+  //   file2 << "row_" << i << ",";
+  //   for (uint32_t j = 0; j < colSize; j++) {
+  //     uint64_t lowerBdIdx = 0 + 2 * (j + colSize * i);
+  //     uint64_t upperBdIdx = 1 + 2 * (j + colSize * i);
+  //     file2 << rawCamData_h[lowerBdIdx]
+  //           << " < x <= " << rawCamData_h[upperBdIdx] << ",";
+  //   }
+  //   file2 << std::endl;
+  // }
+  // file2.close();
 
-  camData->at(rowCamIdx, colCamIdx)
-      ->toCSV("/workspaces/CuCAMASim/camArray.csv");
+  // camData->at(rowCamIdx, colCamIdx)
+  //     ->toCSV("/workspaces/CuCAMASim/camArray.csv");
 
-  // export rawQueryData_h to csv file
-  std::ofstream file3("/workspaces/CuCAMASim/rawQueryData.csv");
-  file3 << ",";
-  for (uint32_t i = 0; i < colSize; i++) {
-    file3 << i << ",";
-  }
-  file3 << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file3 << i << ",";
-    for (uint32_t j = 0; j < colSize; j++) {
-      file3 << rawQueryData_h[i * colSize + j] << ",";
-    }
-    file3 << std::endl;
-  }
-  file3.close();
+  // // export rawQueryData_h to csv file
+  // std::ofstream file3("/workspaces/CuCAMASim/rawQueryData.csv");
+  // file3 << ",";
+  // for (uint32_t i = 0; i < colSize; i++) {
+  //   file3 << i << ",";
+  // }
+  // file3 << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file3 << i << ",";
+  //   for (uint32_t j = 0; j < colSize; j++) {
+  //     file3 << rawQueryData_h[i * colSize + j] << ",";
+  //   }
+  //   file3 << std::endl;
+  // }
+  // file3.close();
 
-  // export matchIdx_d to csv file
-  uint32_t *matchIdx_h =
-      new uint32_t[nVectors * MAX_MATCHED_ROWS * camData->getColCams()];
-  CHECK(cudaMemcpy(
-      matchIdx_h, matchIdx_d,
-      nVectors * MAX_MATCHED_ROWS * camData->getColCams() * sizeof(uint32_t),
-      cudaMemcpyDeviceToHost));
-  std::ofstream file4("/workspaces/CuCAMASim/matchIdx.csv");
-  file4 << ",";
-  for (uint32_t i = 0; i < MAX_MATCHED_ROWS * camData->getColCams(); i++) {
-    file4 << i << ",";
-  }
-  file4 << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file4 << i << ",";
-    for (uint32_t j = 0; j < MAX_MATCHED_ROWS * camData->getColCams(); j++) {
-      file4 << matchIdx_h[j + MAX_MATCHED_ROWS * camData->getColCams() * i]
-            << ",";
-    }
-    file4 << std::endl;
-  }
-  file4.close();
+  // // export matchIdx_d to csv file
+  // uint32_t *matchIdx_h =
+  //     new uint32_t[nVectors * MAX_MATCHED_ROWS * camData->getColCams()];
+  // CHECK(cudaMemcpy(
+  //     matchIdx_h, matchIdx_d,
+  //     nVectors * MAX_MATCHED_ROWS * camData->getColCams() * sizeof(uint32_t),
+  //     cudaMemcpyDeviceToHost));
+  // std::ofstream file4("/workspaces/CuCAMASim/matchIdx.csv");
+  // file4 << ",";
+  // for (uint32_t i = 0; i < MAX_MATCHED_ROWS * camData->getColCams(); i++) {
+  //   file4 << i << ",";
+  // }
+  // file4 << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file4 << i << ",";
+  //   for (uint32_t j = 0; j < MAX_MATCHED_ROWS * camData->getColCams(); j++) {
+  //     file4 << matchIdx_h[j + MAX_MATCHED_ROWS * camData->getColCams() * i]
+  //           << ",";
+  //   }
+  //   file4 << std::endl;
+  // }
+  // file4.close();
 
-  // export matchIdxDist_d to csv file
-  double *matchIdxDist_h =
-      new double[nVectors * MAX_MATCHED_ROWS * camData->getColCams()];
-  CHECK(cudaMemcpy(
-      matchIdxDist_h, matchIdxDist_d,
-      nVectors * MAX_MATCHED_ROWS * camData->getColCams() * sizeof(double),
-      cudaMemcpyDeviceToHost));
-  std::ofstream file5("/workspaces/CuCAMASim/matchIdxDist.csv");
-  file5 << ",";
-  for (uint32_t i = 0; i < MAX_MATCHED_ROWS * camData->getColCams(); i++) {
-    file5 << i << ",";
-  }
-  file5 << std::endl;
-  for (uint32_t i = 0; i < nVectors; i++) {
-    file5 << i << ",";
-    for (uint32_t j = 0; j < MAX_MATCHED_ROWS * camData->getColCams(); j++) {
-      file5 << matchIdxDist_h[j + MAX_MATCHED_ROWS * camData->getColCams() * i]
-            << ",";
-    }
-    file5 << std::endl;
-  }
-  file5.close();
+  // // export matchIdxDist_d to csv file
+  // double *matchIdxDist_h =
+  //     new double[nVectors * MAX_MATCHED_ROWS * camData->getColCams()];
+  // CHECK(cudaMemcpy(
+  //     matchIdxDist_h, matchIdxDist_d,
+  //     nVectors * MAX_MATCHED_ROWS * camData->getColCams() * sizeof(double),
+  //     cudaMemcpyDeviceToHost));
+  // std::ofstream file5("/workspaces/CuCAMASim/matchIdxDist.csv");
+  // file5 << ",";
+  // for (uint32_t i = 0; i < MAX_MATCHED_ROWS * camData->getColCams(); i++) {
+  //   file5 << i << ",";
+  // }
+  // file5 << std::endl;
+  // for (uint32_t i = 0; i < nVectors; i++) {
+  //   file5 << i << ",";
+  //   for (uint32_t j = 0; j < MAX_MATCHED_ROWS * camData->getColCams(); j++) {
+  //     file5 << matchIdxDist_h[j + MAX_MATCHED_ROWS * camData->getColCams() *
+  //     i]
+  //           << ",";
+  //   }
+  //   file5 << std::endl;
+  // }
+  // file5.close();
 
   // std::cerr << "\033[33mWARNING: arraySearch() is still under "
   //              "development\033[0m"
   //           << camSearch << camData << queryData << std::endl;
+
+  // free GPU memory
+  CHECK(cudaFree(rawCamData_d));
+  CHECK(cudaFree(rawQueryData_d));
+  CHECK(cudaFree(distanceArray_d));
 }

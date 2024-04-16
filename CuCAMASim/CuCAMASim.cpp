@@ -31,6 +31,8 @@ void CuCAMASim::query(InputData *inputData,SimResult *simResult) {
   if (config->queryConfig->funcSim == true) {
     functionSimulator->query(inputData, simResult);
   }
+  
+  // Performance Evaluation
   if (config->queryConfig->perfEval == true) {
     throw std::runtime_error("Performance Evaluation is not supported yet");
   }

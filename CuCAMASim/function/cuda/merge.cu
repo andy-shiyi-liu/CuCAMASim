@@ -11,14 +11,11 @@ __global__ void exactMerge(const uint32_t *matchIdx_d,
   uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x;
   uint64_t iy = threadIdx.y + blockIdx.y * blockDim.y;
   assert(iy == 0 &&
-         "We use 1d block and 1d grid for this kernel, iy should be 0");
+         "We assume 1d block and 1d grid for this kernel, iy should be 0");
   if (ix >= nx) {
     return;
   }
   uint64_t vectorIdx = ix;
-  if (vectorIdx == 13) {
-    printf("hit bp\n");
-  }
   uint32_t resultMatchedRowCnt = 0;
   for (uint32_t i = 0; i < MAX_MATCHED_ROWS; i++) {
     assert(resultMatchedRowCnt < MAX_MATCHED_ROWS);

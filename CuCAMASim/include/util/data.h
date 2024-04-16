@@ -19,10 +19,14 @@ class SimResult {
   } perf;
   struct {
     bool valid = false;
+    std::vector<std::vector<uint32_t>> matchedIdx;
+    uint32_t nVectors = uint32_t(-1);
   } func;
 
  public:
   SimResult(){};
+  void writeFuncSimResult(uint32_t* result, uint32_t nVectors, uint32_t nMatchedRowsMax);
+  void printFuncSimResult() const ;
 };
 
 enum CAMArrayType {

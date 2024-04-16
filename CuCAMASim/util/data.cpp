@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "matio.h"
+#include "util/consts.h"
 
 double* loadInputMatrix(mat_t* matfp, const char* variableName, size_t& rows,
                         size_t& cols) {
@@ -100,7 +101,7 @@ void CAMArray::initData() {
   }
 }
 
-void CAMArray::initData(double initVal){
+void CAMArray::initData(double initVal) {
   type = CAM_ARRAY_COLD_START;
   uint64_t nElem = dim.nRows * dim.nCols * dim.nBoundaries;
   this->data = new double[nElem];
@@ -259,4 +260,33 @@ void QueryData::initData(const InputData* inputData,
   std::cout << "--> Mapping the query..., " << _nVectors << " Query, "
             << _colCams << " COL" << std::endl;
   return;
+}
+
+void SimResult::writeFuncSimResult(uint32_t* result, uint32_t nVectors, uint32_t nMatchedRowsMax) {
+  func.nVectors = nVectors;
+  for (uint32_t vectorIdx = 0; vectorIdx < nVectors; vectorIdx++) {
+    if (func.matchedIdx.size() <= vectorIdx) {
+      func.matchedIdx.push_back(std::vector<uint32_t>());
+    }
+    for (uint32_t numMatchRow = 0; numMatchRow < nMatchedRowsMax;
+         numMatchRow++) {
+      uint32_t matchedIdx = result[vectorIdx * nMatchedRowsMax + numMatchRow];
+      if (matchedIdx == uint32_t(-1)) {
+        continue;
+      }
+      func.matchedIdx[vectorIdx].push_back(matchedIdx);
+    }
+  }
+  assert(func.matchedIdx.size() == nVectors);
+}
+
+void SimResult::printFuncSimResult() const {
+  std::cout << "Functional Simulation Result:" << std::endl;
+  for (uint32_t vectorIdx = 0; vectorIdx < func.nVectors; vectorIdx++) {
+    std::cout << "Input vector #" << vectorIdx << ": ";
+    for (uint32_t matchedIdx : func.matchedIdx[vectorIdx]) {
+      std::cout << matchedIdx << " ";
+    }
+    std::cout << std::endl;
+  }
 }
