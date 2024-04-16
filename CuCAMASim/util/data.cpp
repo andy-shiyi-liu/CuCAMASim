@@ -310,14 +310,16 @@ double SimResult::calculateInferenceAccuracy(
   std::mt19937 gen(rd());
   uint32_t correctCnt = 0;
   for (uint32_t vectorIdx = 0; vectorIdx < func.nVectors; vectorIdx++) {
+    // guess class 0 if none-match
     uint32_t finalPred = 0;
     if (!func.matchedIdx[vectorIdx].empty()) {
+      // randomly chose one if multi-match
       std::uniform_int_distribution<> distrib(
           0, func.matchedIdx[vectorIdx].size() - 1);
       uint32_t finalMatchedRowIdx = func.matchedIdx[vectorIdx][distrib(gen)];
       finalPred = (*row2classID)[finalMatchedRowIdx];
     }
-    if(finalPred == label->at(vectorIdx)){
+    if (finalPred == label->at(vectorIdx)) {
       correctCnt++;
     }
   }
