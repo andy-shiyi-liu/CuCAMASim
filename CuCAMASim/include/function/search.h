@@ -28,8 +28,6 @@ class CAMSearch {
         sensing(arrayConfig->sensing),
         sensingLimit(arrayConfig->sensingLimit),
         distanceType(queryConfig->distance) {
-    std::cout << "in CAMSearch()" << std::endl;
-    std::cout << "CAMSearch() done" << std::endl;
   }
 
   void defineSearchArea(uint32_t rowCams, uint32_t colCams);

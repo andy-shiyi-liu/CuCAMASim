@@ -153,15 +153,10 @@ CamConfig::CamConfig(const std::filesystem::path& configPath) {
   YAML::Node camConfig = YAML::LoadFile(configPath);
   YAML::Node arch_config_yaml = camConfig["arch"];
   archConfig = new ArchConfig(camConfig["arch"]);
-  archConfig->print();
   arrayConfig = new ArrayConfig(camConfig["array"]);
-  arrayConfig->print();
   queryConfig = new QueryConfig(camConfig["query"]);
-  queryConfig->print();
   noiseConfig = new NoiseConfig(camConfig["cell"]["writeNoise"]);
   cellConfig = new CellConfig(camConfig["cell"], noiseConfig);
-  cellConfig->print();
   mappingConfig = new MappingConfig(camConfig["mapping"]);
-  mappingConfig->print();
   std::cout << "config read successful!" << std::endl;
 }

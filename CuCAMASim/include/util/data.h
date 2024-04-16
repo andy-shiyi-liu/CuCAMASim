@@ -11,6 +11,147 @@
 #include <map>
 #include <vector>
 
+class Data {};
+
+enum RawDataAccessType { FOR_CUDA_MEM_CPY, ILLEGAL_PURPOSE };
+
+struct InputDataDim {
+  uint32_t nVectors;
+  uint32_t nFeatures;
+};
+
+// for test data in dataset
+class InputData : public Data {
+ private:
+  struct InputDataDim dim;
+  double *data = nullptr;
+
+ public:
+  InputData(uint32_t nVectors, uint32_t nFeatures, double *data) {
+    dim.nVectors = nVectors;
+    dim.nFeatures = nFeatures;
+    this->data = data;
+  }
+  inline void set(uint32_t vecNum, uint32_t featureNum, double val) {
+    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
+           "Index out of range");
+    data[featureNum + dim.nFeatures * vecNum] = val;
+  };
+  inline double at(uint32_t vecNum, uint32_t featureNum) const {
+    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
+           "Index out of range");
+    return data[featureNum + dim.nFeatures * vecNum];
+  }
+
+  void toCSV(const std::filesystem::path &outputPath) const {
+    toCSV(outputPath, ",");
+  }
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
+    std::ofstream file(outputPath);
+    file << sep;
+    for (uint32_t i = 0; i < dim.nFeatures; i++) {
+      file << i << sep;
+    }
+    file << std::endl;
+    for (uint32_t i = 0; i < dim.nVectors; i++) {
+      file << i << sep;
+      for (uint32_t j = 0; j < dim.nFeatures; j++) {
+        file << at(i, j) << sep;
+      }
+      file << std::endl;
+    }
+    file.close();
+  }
+
+  void clip(double min, double max);
+
+  inline uint32_t getNVectors() const { return dim.nVectors; }
+  inline uint32_t getNFeatures() const { return dim.nFeatures; }
+  inline InputDataDim getDim() const { return dim; }
+  inline const double *getData(RawDataAccessType type) const {
+    assert(data != nullptr && "data is not initialized");
+    assert(type == FOR_CUDA_MEM_CPY &&
+           "direct data access is only for CUDA memory copy!");
+    return data;
+  }
+
+  ~InputData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
+};
+
+// for label data in the dataset
+class LabelData : public Data {
+ private:
+  struct LabelDataDim {
+    uint32_t nVectors;
+  } dim;
+  uint64_t *data = nullptr;
+
+ public:
+  LabelData(uint32_t nVectors, uint64_t *data) {
+    dim.nVectors = nVectors;
+    this->data = data;
+  }
+  void toCSV(const std::filesystem::path &outputPath) const {
+    toCSV(outputPath, ",");
+  }
+  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
+    std::ofstream file(outputPath);
+    for (uint32_t i = 0; i < dim.nVectors; i++) {
+      file << at(i) << sep;
+    }
+    file.close();
+  }
+  inline uint64_t at(uint32_t vecNum) const {
+    assert(vecNum < dim.nVectors && "Index out of range");
+    return data[vecNum];
+  }
+  inline uint32_t getNVectors() const { return dim.nVectors; }
+  ~LabelData() {
+    if (data != nullptr) {
+      delete[] data;
+      data = nullptr;
+    }
+  };
+};
+
+class Dataset {
+ private:
+  void loadDataset(std::filesystem::path datasetPath);
+
+ public:
+  InputData *trainInputs = nullptr;
+  LabelData *trainLabels = nullptr;
+  InputData *testInputs = nullptr;
+  LabelData *testLabels = nullptr;
+  Dataset(std::filesystem::path datasetPath) {
+    // load the dataset
+    loadDataset(datasetPath);
+  };
+  ~Dataset() {
+    if (trainInputs != nullptr) {
+      delete trainInputs;
+      trainInputs = nullptr;
+    }
+    if (trainLabels != nullptr) {
+      delete trainLabels;
+      trainLabels = nullptr;
+    }
+    if (testInputs != nullptr) {
+      delete testInputs;
+      testInputs = nullptr;
+    }
+    if (testLabels != nullptr) {
+      delete testLabels;
+      testLabels = nullptr;
+    }
+  };
+};
+
 class SimResult {
  private:
   struct {
@@ -25,8 +166,15 @@ class SimResult {
 
  public:
   SimResult(){};
-  void writeFuncSimResult(uint32_t* result, uint32_t nVectors, uint32_t nMatchedRowsMax);
-  void printFuncSimResult() const ;
+  void writeFuncSimResult(uint32_t *result, uint32_t nVectors,
+                          uint32_t nMatchedRowsMax);
+  void printFuncSimResult() const;
+  double calculateInferenceAccuracy(const LabelData* label, const std::vector<uint32_t>* row2classID) const;
+
+  inline std::vector<std::vector<uint32_t>> getMatchedIdx() const {
+    assert(func.valid && "Function simulation result is not valid");
+    return func.matchedIdx;
+  }
 };
 
 enum CAMArrayType {
@@ -37,10 +185,6 @@ enum CAMArrayType {
   CAM_ARRAY_BASE,
   INVALID_CAMARRAY
 };
-
-enum RawDataAccessType { FOR_CUDA_MEM_CPY, ILLEGAL_PURPOSE };
-
-class Data {};
 
 struct CAMArrayDim {
   uint32_t nRows;
@@ -105,6 +249,15 @@ class CAMArrayBase : public Data {
     assert(type == FOR_CUDA_MEM_CPY &&
            "direct data access is only for CUDA memory copy!");
     return data;
+  }
+  inline const std::vector<uint32_t>* getCol2featureID() const {
+    assert(col2featureID.size() == dim.nCols &&
+           "col2featureID is not initialized");
+    return &col2featureID;
+  }
+  inline const std::vector<uint32_t>* getRow2classID() const {
+    assert(row2classID.size() == dim.nRows && "row2classID is not initialized");
+    return &row2classID;
   }
   void printDim() const {
     std::cout << "nRows: " << dim.nRows << std::endl;
@@ -368,143 +521,6 @@ class ACAMData : public CAMDataBase {
       }
       delete[] camArrays;
       camArrays = nullptr;
-    }
-  };
-};
-
-struct InputDataDim {
-  uint32_t nVectors;
-  uint32_t nFeatures;
-};
-
-// for test data in dataset
-class InputData : public Data {
- private:
-  struct InputDataDim dim;
-  double *data = nullptr;
-
- public:
-  InputData(uint32_t nVectors, uint32_t nFeatures, double *data) {
-    dim.nVectors = nVectors;
-    dim.nFeatures = nFeatures;
-    this->data = data;
-  }
-  inline void set(uint32_t vecNum, uint32_t featureNum, double val) {
-    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
-           "Index out of range");
-    data[featureNum + dim.nFeatures * vecNum] = val;
-  };
-  inline double at(uint32_t vecNum, uint32_t featureNum) const {
-    assert(vecNum < dim.nVectors && featureNum < dim.nFeatures &&
-           "Index out of range");
-    return data[featureNum + dim.nFeatures * vecNum];
-  }
-
-  void toCSV(const std::filesystem::path &outputPath) const {
-    toCSV(outputPath, ",");
-  }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
-    std::ofstream file(outputPath);
-    file << sep;
-    for (uint32_t i = 0; i < dim.nFeatures; i++) {
-      file << i << sep;
-    }
-    file << std::endl;
-    for (uint32_t i = 0; i < dim.nVectors; i++) {
-      file << i << sep;
-      for (uint32_t j = 0; j < dim.nFeatures; j++) {
-        file << at(i, j) << sep;
-      }
-      file << std::endl;
-    }
-    file.close();
-  }
-
-  void clip(double min, double max);
-
-  inline uint32_t getNVectors() const { return dim.nVectors; }
-  inline uint32_t getNFeatures() const { return dim.nFeatures; }
-  inline InputDataDim getDim() const { return dim; }
-  inline const double *getData(RawDataAccessType type) const {
-    assert(data != nullptr && "data is not initialized");
-    assert(type == FOR_CUDA_MEM_CPY &&
-           "direct data access is only for CUDA memory copy!");
-    return data;
-  }
-
-  ~InputData() {
-    if (data != nullptr) {
-      delete[] data;
-      data = nullptr;
-    }
-  };
-};
-
-// for label data in the dataset
-class LabelData : public Data {
- private:
-  struct LabelDataDim {
-    uint32_t nVectors;
-  } dim;
-  uint64_t *data = nullptr;
-
- public:
-  LabelData(uint32_t nVectors, uint64_t *data) {
-    dim.nVectors = nVectors;
-    this->data = data;
-  }
-  void toCSV(const std::filesystem::path &outputPath) const {
-    toCSV(outputPath, ",");
-  }
-  void toCSV(const std::filesystem::path &outputPath, std::string sep) const {
-    std::ofstream file(outputPath);
-    for (uint32_t i = 0; i < dim.nVectors; i++) {
-      file << at(i) << sep;
-    }
-    file.close();
-  }
-  inline uint64_t at(uint32_t vecNum) const {
-    assert(vecNum < dim.nVectors && "Index out of range");
-    return data[vecNum];
-  }
-  inline uint32_t getNVectors() const { return dim.nVectors; }
-  ~LabelData() {
-    if (data != nullptr) {
-      delete[] data;
-      data = nullptr;
-    }
-  };
-};
-
-class Dataset {
- private:
-  void loadDataset(std::filesystem::path datasetPath);
-
- public:
-  InputData *trainInputs = nullptr;
-  LabelData *trainLabels = nullptr;
-  InputData *testInputs = nullptr;
-  LabelData *testLabels = nullptr;
-  Dataset(std::filesystem::path datasetPath) {
-    // load the dataset
-    loadDataset(datasetPath);
-  };
-  ~Dataset() {
-    if (trainInputs != nullptr) {
-      delete trainInputs;
-      trainInputs = nullptr;
-    }
-    if (trainLabels != nullptr) {
-      delete trainLabels;
-      trainLabels = nullptr;
-    }
-    if (testInputs != nullptr) {
-      delete testInputs;
-      testInputs = nullptr;
-    }
-    if (testLabels != nullptr) {
-      delete testLabels;
-      testLabels = nullptr;
     }
   };
 };

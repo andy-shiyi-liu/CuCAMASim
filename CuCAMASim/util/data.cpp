@@ -4,6 +4,7 @@
 #include <cstring>
 #include <filesystem>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 
 #include "matio.h"
@@ -262,7 +263,12 @@ void QueryData::initData(const InputData* inputData,
   return;
 }
 
-void SimResult::writeFuncSimResult(uint32_t* result, uint32_t nVectors, uint32_t nMatchedRowsMax) {
+void SimResult::writeFuncSimResult(uint32_t* result, uint32_t nVectors,
+                                   uint32_t nMatchedRowsMax) {
+  if (func.valid) {
+    throw std::runtime_error(
+        "Functional simulation result has already been written");
+  }
   func.nVectors = nVectors;
   for (uint32_t vectorIdx = 0; vectorIdx < nVectors; vectorIdx++) {
     if (func.matchedIdx.size() <= vectorIdx) {
@@ -277,10 +283,14 @@ void SimResult::writeFuncSimResult(uint32_t* result, uint32_t nVectors, uint32_t
       func.matchedIdx[vectorIdx].push_back(matchedIdx);
     }
   }
+  func.valid = true;
   assert(func.matchedIdx.size() == nVectors);
 }
 
 void SimResult::printFuncSimResult() const {
+  if (!func.valid) {
+    throw std::runtime_error("Functional simulation result is not valid");
+  }
   std::cout << "Functional Simulation Result:" << std::endl;
   for (uint32_t vectorIdx = 0; vectorIdx < func.nVectors; vectorIdx++) {
     std::cout << "Input vector #" << vectorIdx << ": ";
@@ -289,4 +299,28 @@ void SimResult::printFuncSimResult() const {
     }
     std::cout << std::endl;
   }
+}
+
+double SimResult::calculateInferenceAccuracy(
+    const LabelData* label, const std::vector<uint32_t>* row2classID) const {
+  assert(func.valid);
+  assert(label->getNVectors() == func.nVectors);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  uint32_t correctCnt = 0;
+  for (uint32_t vectorIdx = 0; vectorIdx < func.nVectors; vectorIdx++) {
+    uint32_t finalPred = 0;
+    if (!func.matchedIdx[vectorIdx].empty()) {
+      std::uniform_int_distribution<> distrib(
+          0, func.matchedIdx[vectorIdx].size() - 1);
+      uint32_t finalMatchedRowIdx = func.matchedIdx[vectorIdx][distrib(gen)];
+      finalPred = (*row2classID)[finalMatchedRowIdx];
+    }
+    if(finalPred == label->at(vectorIdx)){
+      correctCnt++;
+    }
+  }
+  assert(correctCnt <= func.nVectors);
+  return double(correctCnt) / double(func.nVectors);
 }

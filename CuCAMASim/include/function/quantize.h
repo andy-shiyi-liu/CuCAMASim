@@ -13,8 +13,6 @@ class Quantize {
 
  public:
   Quantize(QueryConfig* queryConfig) : numBits(queryConfig->bit) {
-    std::cout << "in Quantize()" << std::endl;
-    std::cout << "Quantize() done" << std::endl;
   }
 
   void write(CAMArrayBase* camArray);

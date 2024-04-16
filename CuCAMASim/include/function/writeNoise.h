@@ -22,8 +22,6 @@ class WriteNoise {
         cellDesign(noiseConfig->cellDesign),
         minConductance(noiseConfig->minConductance),
         maxConductance(noiseConfig->maxConductance) {
-    std::cout << "in WriteNoise()" << std::endl;
-    std::cout << "WriteNoise() done" << std::endl;
   }
   void addWriteNoise(CAMArrayBase *camArray);
 };

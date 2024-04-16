@@ -6,10 +6,7 @@
 #include "util/config.h"
 
 void CuCAMASim::write(CAMArrayBase *camArray) {
-  std::cout << "in CuCAMASim::write()" << std::endl;
   std::cout << "*** Write Data to CAM Arrays ***" << std::endl;
-  std::cout << "CAMArray dims:" << std::endl;
-  camArray->printDim();
 
   // Function Simulation
   if (config->queryConfig->funcSim == true) {
@@ -20,8 +17,6 @@ void CuCAMASim::write(CAMArrayBase *camArray) {
   if (config->queryConfig->perfEval == true) {
     throw std::runtime_error("Performance Evaluation is not supported yet");
   }
-
-  std::cout << "CuCAMASim::write() done" << std::endl;
 }
 
 void CuCAMASim::query(InputData *inputData,SimResult *simResult) {

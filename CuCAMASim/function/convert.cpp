@@ -21,7 +21,6 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
       device(cellConfig->device),
       design(cellConfig->design),
       cellConfig(cellConfig) {
-  std::cout << "in ConvertToPhys()" << std::endl;
   if (cellConfig->design == "6T2M") {
     conduct2Vbd = &ConvertToPhys::conduct2Vbd6T2M;
   } else if (cellConfig->design == "8T2M") {
@@ -135,7 +134,6 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
       queryClipRangeMax = std::stod(N2VCvtCfg["queryClipRangeMax"]);
     }
   }
-  std::cout << "ConvertToPhys() done" << std::endl;
 }
 
 // Converts data to a physical representation suitable for write operations.

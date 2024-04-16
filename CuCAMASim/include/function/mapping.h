@@ -19,8 +19,6 @@ class  Mapping {
  public:
   Mapping(ArrayConfig *arrayConfig)
       : rowSize(arrayConfig->row), colSize(arrayConfig->col) {
-    std::cout << "in Mapping()" << std::endl;
-    std::cout << "Mapping() done" << std::endl;
   }
 
   void addNewMapping(CAMArrayBase *camArray);

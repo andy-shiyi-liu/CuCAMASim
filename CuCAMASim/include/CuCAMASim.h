@@ -19,12 +19,10 @@ class CuCAMASim {
 
  public:
   CuCAMASim(CamConfig *camConfig) : config(camConfig) {
-    std::cout << "in CuCAMASim()" << std::endl;
     functionSimulator = new FunctionSimulator(camConfig);
     archEstimator = new ArchEstimator(camConfig);
     performanceEvaluator = new PerformanceEvaluator();
     simResult = new SimResult();
-    std::cout << "CuCAMASim() done" << std::endl;
   };
   void write(CAMArrayBase *camArray);
   void query(InputData *inputData, SimResult *simResult);
