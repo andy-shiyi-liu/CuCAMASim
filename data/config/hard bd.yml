@@ -38,8 +38,8 @@ query:
   searchScheme: exact
 mapping:
   N2VConvert:
-    maxConvertConductance: 140
-    minConvertConductance: 10
+    maxConvertConductance: 150
+    minConvertConductance: 0
     lineConvertRangeMin: -0.1
     lineConvertRangeMax: 1.1
     queryClipRangeMin: 0.2

@@ -12,8 +12,7 @@ Dataset *loadDataset(std::string datasetName) {
   std::cout << "Loading dataset: " << datasetName << std::endl;
   std::map<std::string, std::filesystem::path> datasetPath = {
       {"BTSC_adapted_rand",
-       "/workspaces/CuCAMASim/dataset/BTSC/rand/"
-       "300train_100validation_-1test.mat"},
+       "/workspaces/CuCAMASim/data/datasets/BelgiumTSC/300train_100validation_-1test.mat"},
       {"test", "/workspaces/CuCAMASim/dataset/test/test.mat"}};
   Dataset *dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
@@ -23,6 +22,8 @@ Dataset *loadDataset(std::string datasetName) {
 int main() {
   DecisionTree dt("/workspaces/CuCAMASim/data/treeText/exampleTreeText.txt");
   ACAMArray *camArray = dt.toACAM();
+
+  camArray->toCSV("/workspaces/CuCAMASim/tree.csv");
 
   Dataset *dataset = loadDataset("BTSC_adapted_rand");
 
