@@ -120,11 +120,13 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
         camArray->set(rowID, colID, boundaryID, threshold);
       } else {
         if (boundaryID == 0) {
-          camArray->set(rowID, colID, boundaryID,
+          camArray->set(
+              rowID, colID, boundaryID,
               std::max(camArray->at(rowID, colID, boundaryID), threshold));
         } else {
           assert(boundaryID == 1);
-          camArray->set(rowID, colID, boundaryID,
+          camArray->set(
+              rowID, colID, boundaryID,
               std::min(camArray->at(rowID, colID, boundaryID), threshold));
         }
       }
@@ -165,4 +167,36 @@ void DecisionTree::printSubTree(TreeNode* treeNode, std::string spacing) {
             << std::setprecision(16) << stemNode->getThreshold() << std::endl;
   printSubTree(stemNode->getGtNode(), spacing + "|   ");
   return;
+}
+
+void DecisionTree::pred(InputData *input, std::vector<uint32_t> &predLabel) {
+  predLabel.resize(input->getNVectors());
+  for (uint32_t rowIdx = 0; rowIdx < input->getNVectors(); rowIdx++) {
+    predRow(input, rowIdx, rootNode, predLabel);
+  }
+}
+
+void DecisionTree::predRow(InputData *input, uint32_t rowIdx, TreeNode* node,
+                           std::vector<uint32_t> &predLabel) {
+  if (node->getType() == LEAF_NODE) {
+    LeafNode* leafNode = dynamic_cast<LeafNode*>(node);
+    predLabel[rowIdx] = leafNode->getClassID();
+    return;
+  }else{
+    assert(node->getType() == STEM_NODE);
+    StemNode* stemNode = dynamic_cast<StemNode*>(node);
+    if(input->at(rowIdx, stemNode->getFeatureID()) <= stemNode->getThreshold()){
+      assert(stemNode->getLeNode() != nullptr);
+      predRow(input, rowIdx, stemNode->getLeNode(), predLabel);
+    }else{
+      assert(stemNode->getGtNode() != nullptr);
+      predRow(input, rowIdx, stemNode->getGtNode(), predLabel);
+    }
+  }
+}
+
+double DecisionTree::score(InputData *input, LabelData *label){
+  std::vector<uint32_t> predLabel;
+  pred(input, predLabel);
+  return label->calculateInferenceAccuracy(predLabel);
 }

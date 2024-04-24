@@ -326,3 +326,19 @@ double SimResult::calculateInferenceAccuracy(
   assert(correctCnt <= func.nVectors);
   return double(correctCnt) / double(func.nVectors);
 }
+
+double LabelData::calculateInferenceAccuracy(
+    const std::vector<uint32_t>& predLabel) const {
+  if (predLabel.size() != getNVectors()) {
+    throw std::runtime_error(
+        "Size of predLabel does not match the number of vectors in LabelData");
+  }
+  uint32_t correctCnt = 0;
+  for (uint32_t vectorIdx = 0; vectorIdx < getNVectors(); vectorIdx++) {
+    if (predLabel[vectorIdx] == at(vectorIdx)) {
+      correctCnt++;
+    }
+  }
+  assert(correctCnt <= getNVectors());
+  return double(correctCnt) / double(getNVectors());
+}

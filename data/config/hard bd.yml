@@ -40,10 +40,10 @@ mapping:
   N2VConvert:
     maxConvertConductance: 150
     minConvertConductance: 0
-    lineConvertRangeMin: -0.1
-    lineConvertRangeMax: 1.1
-    queryClipRangeMin: 0.2
-    queryClipRangeMax: 0.8
+    # lineConvertRangeMin: -0.1
+    # lineConvertRangeMax: 1.1
+    # queryClipRangeMin: 0.2
+    # queryClipRangeMax: 0.8
   expandConductanceAll:
     strategy: "fixed size"
     expandSize: 0

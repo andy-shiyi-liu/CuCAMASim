@@ -111,6 +111,7 @@ class LabelData : public Data {
     return data[vecNum];
   }
   inline uint32_t getNVectors() const { return dim.nVectors; }
+  double calculateInferenceAccuracy(const std::vector<uint32_t> &predLabel) const ;
   ~LabelData() {
     if (data != nullptr) {
       delete[] data;

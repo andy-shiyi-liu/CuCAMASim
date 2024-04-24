@@ -1,6 +1,7 @@
 #ifndef DT2CAM_H
 #define DT2CAM_H
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -8,7 +9,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 #include "util/data.h"
 
@@ -20,7 +20,7 @@ class TreeNode {
   TreeNodeType type = INVALID_NODE;
 
  public:
-  virtual TreeNode* getParent() { return parent; }
+  virtual TreeNode *getParent() { return parent; }
   virtual TreeNodeType getType() { return type; };
   virtual ~TreeNode() {}
 };
@@ -90,11 +90,13 @@ class DecisionTree {
 
   void parseTreeText();
   TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);
-  void printSubTree(TreeNode* treeNode, std::string spacing);
-  ACAMArray* tree2camThresholdArray();
+  void printSubTree(TreeNode *treeNode, std::string spacing);
+  ACAMArray *tree2camThresholdArray();
+  void predRow(InputData *input, uint32_t rowIdx, TreeNode* node,
+               std::vector<uint32_t> &predLabel);
 
  public:
-  DecisionTree(const std::filesystem::path& treeTextPath) {
+  DecisionTree(const std::filesystem::path &treeTextPath) {
     // Code to read the tree text from the file at treeTextPath
     // and initialize the treeText member variable
     std::ifstream file(treeTextPath);
@@ -120,6 +122,8 @@ class DecisionTree {
     }
     std::cout << oss.str();  // Print the string stream
   };
+  void pred(InputData *input, std::vector<uint32_t> &predLabel);
+  double score(InputData *input, LabelData *label);
   ACAMArray *toACAM();
 };
 
