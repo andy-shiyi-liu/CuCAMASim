@@ -27,7 +27,7 @@ Dataset *loadDataset(std::string datasetName) {
   return dataset;
 }
 
-std::string treeTextPath(std::string datasetName) {
+std::string getTreeTextPath(std::string datasetName) {
   std::map<std::string, std::string> treeTextPath = {
       {"BTSC_adapted_rand",
        "/workspaces/CuCAMASim/data/treeText/BTSC/"
@@ -50,10 +50,20 @@ int main(int argc, char *argv[]) {
                  "Name of dataset to be used. Available options: "
                  "BTSC_adapted_rand, gas_normalized, gas");
 
+  std::string treeTextPath = "default";
+  app.add_option("--use_trained_tree", treeTextPath,
+                 "Path to the tree text file. If not provided, the default "
+                 "path for the dataset will be used.");
+
   // Parsing command-line arguments
   CLI11_PARSE(app, argc, argv);
 
-  DecisionTree dt(treeTextPath(datasetName));
+  if (treeTextPath == "default") {
+    treeTextPath = getTreeTextPath(datasetName);
+  }
+  std::cout << "Using tree text: " << treeTextPath << std::endl;
+
+  DecisionTree dt(treeTextPath);
   ACAMArray *camArray = dt.toACAM();
 
   Dataset *dataset = loadDataset(datasetName);
