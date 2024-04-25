@@ -12,12 +12,12 @@
 #define RRAM_TOLERANCE 1e-8
 //  - add new mapping on RRAM Conductance
 //    - thread and block size used
-#define RRAM_NEWMAPPING_THREAD_X 1     // suggested: 16
-#define RRAM_NEWMAPPING_THREAD_Y 1     // suggested: 32
+#define RRAM_NEWMAPPING_THREAD_X 16     // suggested: 16
+#define RRAM_NEWMAPPING_THREAD_Y 32     // suggested: 32
 //  - add RRAM noise
 //    - thread and block size when adding RRAM noise
-#define RRAM_NOISE_THREAD_X 1          // suggested: 16
-#define RRAM_NOISE_THREAD_Y 1          // suggested: 32
+#define RRAM_NOISE_THREAD_X 16          // suggested: 16
+#define RRAM_NOISE_THREAD_Y 32          // suggested: 32
 
 // Maximum number of rows that can be matched for a single query.
 // This is necessary for allocating GPU memory.
