@@ -44,8 +44,6 @@ int main() {
   DecisionTree dt(treeTextPath(DATASET_NAME));
   ACAMArray *camArray = dt.toACAM();
 
-  // camArray->toCSV("/workspaces/CuCAMASim/tree.csv");
-
   Dataset *dataset = loadDataset(DATASET_NAME);
 
   std::cout << "Software Accuracy: "
@@ -56,8 +54,6 @@ int main() {
 
   camasim.write(camArray);
   camasim.query(dataset->testInputs, camasim.getSimResult());
-
-  // camasim.getSimResult()->printFuncSimResult();
 
   std::cout << "CAM Accuracy: "
             << camasim.getSimResult()->calculateInferenceAccuracy(

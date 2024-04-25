@@ -22,9 +22,9 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
       design(cellConfig->design),
       cellConfig(cellConfig) {
   if (cellConfig->design == "6T2M") {
-    conduct2Vbd = &ConvertToPhys::conduct2Vbd6T2M;
+    conduct2Vbd = RRAMConduct2Vbd6T2M;
   } else if (cellConfig->design == "8T2M") {
-    conduct2Vbd = &ConvertToPhys::conduct2Vbd8T2M;
+    conduct2Vbd = RRAMConduct2Vbd8T2M;
   }
   // if "N2VConvert", set min/max Vbd according to the config
   if (mappingConfig->strategies.find("N2VConvert") !=
@@ -60,11 +60,12 @@ ConvertToPhys::ConvertToPhys(CellConfig *cellConfig,
           "ERROR: minConvertConductance should be larger or equal to the "
           "minConductance in the cell config");
     }
-    VbdMax = (this->*conduct2Vbd)(maxConvertConductance);
-    VbdMin = (this->*conduct2Vbd)(minConvertConductance);
+    
+    VbdMax = (this->conduct2Vbd)(maxConvertConductance);
+    VbdMin = (this->conduct2Vbd)(minConvertConductance);
   } else {
-    VbdMax = (this->*conduct2Vbd)(cellConfig->maxConductance);
-    VbdMin = (this->*conduct2Vbd)(cellConfig->minConductance);
+    VbdMax = (this->conduct2Vbd)(cellConfig->maxConductance);
+    VbdMin = (this->conduct2Vbd)(cellConfig->minConductance);
     assert(VbdMax > VbdMin && "ERROR: VbdMax should be larger than VbdMin");
   }
 
