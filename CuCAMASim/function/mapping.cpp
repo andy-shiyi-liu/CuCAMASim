@@ -19,12 +19,6 @@ void Mapping::addNewMapping(CAMArrayBase *camArray) {
               << cellConfig->device << "' is not implemented yet.\033[0m"
               << std::endl;
   }
-
-  std::cerr << "\033[33mWARNING: Mapping::addNewMapping() is under "
-               "development\033[0m"
-            << std::endl;
-  camArray->getType();
-
   return;
 }
 
