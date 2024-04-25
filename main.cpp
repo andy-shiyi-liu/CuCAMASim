@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
   Dataset *dataset = loadDataset(datasetName);
 
-  std::cout << "Software Accuracy: "
+  std::cout << "DT Accuracy (original): "
             << dt.score(dataset->testInputs, dataset->testLabels) << std::endl;
 
   CamConfig camConfig(configPath);
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   camasim.write(camArray);
   camasim.query(dataset->testInputs, camasim.getSimResult());
 
-  std::cout << "CAM Accuracy: "
+  std::cout << "DT Accuracy (CAM): "
             << camasim.getSimResult()->calculateInferenceAccuracy(
                    dataset->testLabels, camArray->getRow2classID())
             << std::endl;
