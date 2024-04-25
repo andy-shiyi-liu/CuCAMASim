@@ -1,16 +1,12 @@
+#include <curand_kernel.h>
 #include <stdio.h>
 
 #include <cstring>
+#include <fstream>
 
 #include "function/cuda/rram.cuh"
 #include "function/cuda/util.cuh"
 #include "util/consts.h"
-
-enum RRAMNoiseType {
-  GAUSSIAN,
-  BOUNDED_GAUSSIAN,
-  G_DEPENDENT,
-};
 
 // use newton's method to solve conductance from Vbd
 __device__ inline double solveConductanceFromVbd(double Vbd,
@@ -23,8 +19,8 @@ __device__ inline double solveConductanceFromVbd(double Vbd,
     f = RRAMConduct2Vbd(x, type) - Vbd;
     df = d_RRAMConduct2Vbd(x, type);
   }
-  if (fabs(f) > RRAM_TOLERANCE){
-    printf("\033[0;31mERROR: Newton's method failed to converge\033[0m\n");
+  if (fabs(f) > RRAM_TOLERANCE) {
+    printf("\033[0;31mERROR: Newton's method failed to converge!\033[0m\n");
   }
   return x;
 };
@@ -69,11 +65,49 @@ __global__ void conductance2Vbd(double *array, const CAMArrayDim camDim,
       RRAMConduct2Vbd(upperBdConductance, cellType);
 };
 
-__global__ void addRRAMVariation(double *array, uint32_t nRows, uint32_t nCols,
-                                 uint32_t nBoundaries, RRAMCellType cellType,
-                                 RRAMNoiseType noiseType) {
-  // printf("in addRRAMVariation()\n");
-  assert(nBoundaries == 2);
+__global__ void addBoundedGaussianVariation(double *array,
+                                            const CAMArrayDim camDim,
+                                            const double stdDev,
+                                            const double bound,
+                                            const double minConductance,
+                                            const double maxConductance) {
+  // printf("in addBoundedGaussianVariation()\n");
+  assert(camDim.nBoundaries == 2);
+  assert(minConductance <= maxConductance);
+  uint32_t nx = camDim.nCols;
+  uint32_t ny = camDim.nRows;
+  getIx;
+  getIy;
+  getIdx2D;
+  outOfRangeReturn2D;
+  uint32_t rowIdx = iy;
+  uint32_t colIdx = ix;
+
+  // Initialize the random number generator
+  curandState state;
+  curand_init(clock64(), idx, 0, &state);
+
+  double lowerBdConductance = array[getCamIdx(rowIdx, colIdx, 0, camDim)];
+  double noise = max(min(curand_normal_double(&state) * stdDev, bound), -bound);
+  assert(noise >= -bound);
+  assert(noise <= bound);
+  lowerBdConductance = max(
+      min(array[getCamIdx(rowIdx, colIdx, 0, camDim)] + noise, maxConductance),
+      minConductance);
+  assert(lowerBdConductance >= minConductance);
+  assert(lowerBdConductance <= maxConductance);
+  array[getCamIdx(rowIdx, colIdx, 0, camDim)] = lowerBdConductance;
+
+  double upperBdConductance = array[getCamIdx(rowIdx, colIdx, 1, camDim)];
+  noise = max(min(curand_normal_double(&state) * stdDev, bound), -bound);
+  assert(noise >= -bound);
+  assert(noise <= bound);
+  upperBdConductance = max(
+      min(array[getCamIdx(rowIdx, colIdx, 1, camDim)] + noise, maxConductance),
+      minConductance);
+  assert(upperBdConductance >= minConductance);
+  assert(upperBdConductance <= maxConductance);
+  array[getCamIdx(rowIdx, colIdx, 1, camDim)] = upperBdConductance;
 };
 
 void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
@@ -83,6 +117,7 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
   // get info
   uint32_t nRows = array->getNRows();
   uint32_t nCols = array->getNCols();
+  assert(nRows != 0 && nCols != 0);
   uint32_t nBoundaries = array->getDim().nBoundaries;
   assert(nBoundaries == 2);
   std::string cellType = writeNoise->getCellDesign();
@@ -107,8 +142,9 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
 
   // grid block size
   const dim3 block(RRAM_NOISE_THREAD_X, RRAM_NOISE_THREAD_Y);
-  const dim3 grid((long long int)(nRows - 1) / block.x + 1,
-                  (long long int)(nCols - 1) / block.y + 1);
+  const dim3 grid((long long int)(nCols - 1) / block.x + 1,
+                  (long long int)(nRows - 1) / block.y + 1);
+  checkGridBlockSize(grid, block);
 
   // cuda stream
   cudaStream_t stream;
@@ -116,7 +152,7 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
 
   // convert to conductance
   Vbd2conductance<<<grid, block, 0, stream>>>(camRawData_d, array->getDim(),
-                                             cellTypeCUDA);
+                                              cellTypeCUDA);
 
   // iterate through noise types
   for (auto &it : noiseType) {
@@ -127,10 +163,11 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
       std::string noiseType = params["type"];
 
       if (noiseType == "bounded_gaussian") {
-        RRAMNoiseType noiseTypeCUDA = GAUSSIAN;
-        addRRAMVariation<<<grid, block, 0, stream>>>(camRawData_d, nRows, nCols,
-                                                     nBoundaries, cellTypeCUDA,
-                                                     noiseTypeCUDA);
+        double stdDev = std::stod(params["stdDev"]);
+        double bound = std::stod(params["bound"]);
+        addBoundedGaussianVariation<<<grid, block, 0, stream>>>(
+            camRawData_d, array->getDim(), stdDev, bound,
+            writeNoise->getMinConductance(), writeNoise->getMaxConductance());
       } else {
         throw std::runtime_error("Invalid variation type: " + noiseType);
       }
@@ -148,7 +185,4 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
   CHECK(cudaMemcpy(camRawData_h, camRawData_d, nByte, cudaMemcpyDeviceToHost));
   CHECK(cudaFree(camRawData_d));
   CHECK(cudaStreamDestroy(stream));
-
-  std::cerr << "\033[33mWARNING: addRRAMNoise() is still under development"
-            << std::endl;
 }

@@ -20,15 +20,18 @@
   }
 
 #define getIx uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x
-#define getIy uint64_t iy =threadIdx.y + blockIdx.y * blockDim.y
+#define getIy uint64_t iy = threadIdx.y + blockIdx.y * blockDim.y
 #define getIdx2D uint64_t idx = ix + iy * nx;
-#define outOfRangeReturn2D if (ix >= nx || iy >= ny) { return; }
+#define outOfRangeReturn2D    \
+  if (ix >= nx || iy >= ny) { \
+    return;                   \
+  }
 
 extern "C" {
-__device__ inline uint64_t getCamIdx(const uint32_t rowIdx,
-                                     const uint32_t colIdx,
-                                     const uint32_t bdIdx,
-                                     const CAMArrayDim camDim) {
+__device__ __host__ inline uint64_t getCamIdx(const uint32_t rowIdx,
+                                              const uint32_t colIdx,
+                                              const uint32_t bdIdx,
+                                              const CAMArrayDim camDim) {
   assert(rowIdx < camDim.nRows);
   assert(colIdx < camDim.nCols);
   assert(bdIdx < camDim.nBoundaries);
@@ -64,5 +67,17 @@ __device__ inline uint64_t getMatchResultIdx(const uint32_t vectorIdx,
 }
 
 void initDevice(int devNum);
+
+inline void checkGridBlockSize(const dim3 grid, const dim3 block) {
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, 0);
+  assert(int(block.x) <= prop.maxThreadsDim[0] && block.x > 0);
+  assert(int(block.y) <= prop.maxThreadsDim[1] && block.y > 0);
+  assert(int(block.z) <= prop.maxThreadsDim[2] && block.z > 0);
+  assert(int(grid.x) <= prop.maxGridSize[0] && grid.x > 0);
+  assert(int(grid.y) <= prop.maxGridSize[1] && grid.y > 0);
+  assert(int(grid.z) <= prop.maxGridSize[2] && grid.z > 0);
+  assert(int(block.x * block.y * block.z) <= prop.maxThreadsPerBlock);
+};
 
 #endif

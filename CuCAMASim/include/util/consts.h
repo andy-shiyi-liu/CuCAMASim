@@ -7,7 +7,7 @@
 
 // add RRAM noise
 //  - thread and block size when adding RRAM noise
-#define RRAM_NOISE_THREAD_X 32
+#define RRAM_NOISE_THREAD_X 16
 #define RRAM_NOISE_THREAD_Y 32
 //  - newton's method for solving conductance from Vbd
 #define RRAM_STARTPOINT 75

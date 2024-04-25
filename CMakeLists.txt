@@ -12,7 +12,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 # set debug build type
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 # add debug symbols and disable optimizations for debug builds
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

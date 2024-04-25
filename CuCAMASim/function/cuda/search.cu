@@ -166,7 +166,7 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   const InputDataDim queryDim = queryData->at(colCamIdx)->getDim();
 
   assert(camDim.nCols == queryDim.nFeatures);
-  assert(camDim.nCols == rowSize);
+  assert(camDim.nRows == rowSize);
   assert(queryDim.nVectors == nVectors);
   assert(camDim.nCols == colSize);
 

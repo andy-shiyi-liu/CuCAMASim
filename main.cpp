@@ -8,8 +8,9 @@
 #include "dt2cam.h"
 #include "matio.h"
 
-#define DATASET_NAME "gas_normalized"
+// #define DATASET_NAME "BTSC_adapted_rand"
 // #define DATASET_NAME "gas"
+#define DATASET_NAME "gas_normalized"
 
 Dataset *loadDataset(std::string datasetName) {
   std::cout << "Loading dataset: " << datasetName << std::endl;

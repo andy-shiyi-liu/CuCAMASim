@@ -20,9 +20,5 @@ void WriteNoise::addWriteNoise(CAMArrayBase *camArray) {
     throw std::runtime_error("Add write noise for device '" + noiseConfig->device +
                              "' is not supported yet");
   }
-
-  std::cerr << "\033[33mWARNING: WriteNoise::addWriteNoise() is still under "
-               "development"
-            << std::endl;
   return;
 }
