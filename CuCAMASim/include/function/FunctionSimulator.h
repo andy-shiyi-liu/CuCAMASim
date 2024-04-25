@@ -5,11 +5,11 @@
 
 #include <iostream>
 
-#include "util/config.h"
 #include "convert.h"
 #include "mapping.h"
 #include "quantize.h"
 #include "search.h"
+#include "util/config.h"
 #include "writeNoise.h"
 
 class FunctionSimulator {
@@ -24,8 +24,10 @@ class FunctionSimulator {
  public:
   FunctionSimulator(CamConfig *camConfig) : camConfig(camConfig) {
     quantizer = new Quantize(camConfig->queryConfig);
-    converter = new ConvertToPhys(camConfig->cellConfig, camConfig->mappingConfig);
-    mapping = new Mapping(camConfig->arrayConfig);
+    converter =
+        new ConvertToPhys(camConfig->cellConfig, camConfig->mappingConfig);
+    mapping = new Mapping(camConfig->arrayConfig, camConfig->mappingConfig,
+                          camConfig->cellConfig);
     search = new CAMSearch(camConfig->queryConfig, camConfig->arrayConfig);
     writeNoise = new WriteNoise(camConfig->noiseConfig);
   }

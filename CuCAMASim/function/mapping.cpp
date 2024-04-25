@@ -1,15 +1,30 @@
 #include "function/mapping.h"
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 
+#include "function/cuda/rram.cuh"
 #include "util/data.h"
 
 void Mapping::addNewMapping(CAMArrayBase *camArray) {
-  std::cerr << "\033[33mWARNING: Mapping::addNewMapping() is not implemented "
-               "yet\033[0m"
+  if (mappingConfig == nullptr) {
+    return;
+  }
+
+  if (cellConfig->device == "RRAM") {
+    addRRAMNewMapping(this, dynamic_cast<ACAMArray *>(camArray));
+  } else {
+    std::cerr << "\033[33mWARNING: add new mapping for device '"
+              << cellConfig->device << "' is not implemented yet.\033[0m"
+              << std::endl;
+  }
+
+  std::cerr << "\033[33mWARNING: Mapping::addNewMapping() is under "
+               "development\033[0m"
             << std::endl;
   camArray->getType();
+
   return;
 }
 

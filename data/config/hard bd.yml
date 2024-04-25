@@ -25,8 +25,8 @@ cell:
     minConductance: 0
     noiseType:
       variation:
-        stdDev: 10
-        bound: 100
+        stdDev: 5
+        bound: 7.5
         type: bounded_gaussian
 query:
   FuncSim: true
@@ -38,12 +38,12 @@ query:
   searchScheme: exact
 mapping:
   N2VConvert:
-    maxConvertConductance: 150
-    minConvertConductance: 0
+    maxConvertConductance: 140
+    minConvertConductance: 10
     # lineConvertRangeMin: -0.1
     # lineConvertRangeMax: 1.1
     # queryClipRangeMin: 0.2
     # queryClipRangeMax: 0.8
   expandConductanceAll:
     strategy: "fixed size"
-    expandSize: 0
+    expandSize: 7.5

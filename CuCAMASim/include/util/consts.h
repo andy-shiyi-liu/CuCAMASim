@@ -5,18 +5,23 @@
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
 
-// add RRAM noise
-//  - thread and block size when adding RRAM noise
-#define RRAM_NOISE_THREAD_X 16
-#define RRAM_NOISE_THREAD_Y 32
+// RRAM related
 //  - newton's method for solving conductance from Vbd
 #define RRAM_STARTPOINT 75
 #define RRAM_MAX_ITER 100
 #define RRAM_TOLERANCE 1e-8
+//  - add new mapping on RRAM Conductance
+//    - thread and block size used
+#define RRAM_NEWMAPPING_THREAD_X 1     // suggested: 16
+#define RRAM_NEWMAPPING_THREAD_Y 1     // suggested: 32
+//  - add RRAM noise
+//    - thread and block size when adding RRAM noise
+#define RRAM_NOISE_THREAD_X 1          // suggested: 16
+#define RRAM_NOISE_THREAD_Y 1          // suggested: 32
 
 // Maximum number of rows that can be matched for a single query.
 // This is necessary for allocating GPU memory.
-#define MAX_MATCHED_ROWS 10
+#define MAX_MATCHED_ROWS 100
 
 // thread and block size used in arraySearch()
 //  - when calculating distance for every query vector, we launch a 2D grid of

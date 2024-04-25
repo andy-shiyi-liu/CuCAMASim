@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "function/mapping.h"
 #include "function/writeNoise.h"
 #include "util/config.h"
 #include "util/data.h"
@@ -62,6 +63,8 @@ __host__ __device__ inline double d_RRAMConduct2Vbd(double x,
 };
 
 void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array);
+
+void addRRAMNewMapping(Mapping *mapping, ACAMArray *array);
 }
 
 #endif

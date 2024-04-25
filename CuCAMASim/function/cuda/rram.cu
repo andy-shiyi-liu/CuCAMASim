@@ -87,22 +87,20 @@ __global__ void addBoundedGaussianVariation(double *array,
   curandState state;
   curand_init(clock64(), idx, 0, &state);
 
-  double lowerBdConductance = array[getCamIdx(rowIdx, colIdx, 0, camDim)];
   double noise = max(min(curand_normal_double(&state) * stdDev, bound), -bound);
   assert(noise >= -bound);
   assert(noise <= bound);
-  lowerBdConductance = max(
+  double lowerBdConductance = max(
       min(array[getCamIdx(rowIdx, colIdx, 0, camDim)] + noise, maxConductance),
       minConductance);
   assert(lowerBdConductance >= minConductance);
   assert(lowerBdConductance <= maxConductance);
   array[getCamIdx(rowIdx, colIdx, 0, camDim)] = lowerBdConductance;
 
-  double upperBdConductance = array[getCamIdx(rowIdx, colIdx, 1, camDim)];
   noise = max(min(curand_normal_double(&state) * stdDev, bound), -bound);
   assert(noise >= -bound);
   assert(noise <= bound);
-  upperBdConductance = max(
+  double upperBdConductance = max(
       min(array[getCamIdx(rowIdx, colIdx, 1, camDim)] + noise, maxConductance),
       minConductance);
   assert(upperBdConductance >= minConductance);
@@ -176,6 +174,11 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
     }
   }
 
+  // // for debug
+  // CHECK(cudaStreamSynchronize(stream));
+  // CHECK(cudaMemcpy(camRawData_h, camRawData_d, nByte, cudaMemcpyDeviceToHost));
+  // array->toCSV("/workspaces/CuCAMASim/1after.csv");
+
   // convert back to Vbd
   conductance2Vbd<<<grid, block, 0, stream>>>(camRawData_d, array->getDim(),
                                               cellTypeCUDA);
@@ -186,3 +189,105 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
   CHECK(cudaFree(camRawData_d));
   CHECK(cudaStreamDestroy(stream));
 }
+
+__global__ void expandConductanceAll(double *array, const CAMArrayDim camDim,
+                                     const double expandSize,
+                                     const double minConductance,
+                                     const double maxConductance) {
+  // printf("in addBoundedGaussianVariation()\n");
+  assert(camDim.nBoundaries == 2);
+  assert(minConductance <= maxConductance);
+  uint32_t nx = camDim.nCols;
+  uint32_t ny = camDim.nRows;
+  getIx;
+  getIy;
+  getIdx2D;
+  outOfRangeReturn2D;
+  uint32_t rowIdx = iy;
+  uint32_t colIdx = ix;
+
+  // Initialize the random number generator
+  curandState state;
+  curand_init(clock64(), idx, 0, &state);
+
+  double lowerBdConductance = array[getCamIdx(rowIdx, colIdx, 0, camDim)];
+  assert(lowerBdConductance >= minConductance - RRAM_TOLERANCE &&
+         lowerBdConductance <= maxConductance + RRAM_TOLERANCE);
+  lowerBdConductance = max(lowerBdConductance - expandSize, minConductance);
+  array[getCamIdx(rowIdx, colIdx, 0, camDim)] = lowerBdConductance;
+
+  double upperBdConductance = array[getCamIdx(rowIdx, colIdx, 1, camDim)];
+  assert(upperBdConductance >= minConductance - RRAM_TOLERANCE &&
+         upperBdConductance <= maxConductance + RRAM_TOLERANCE);
+  upperBdConductance = min(upperBdConductance + expandSize, maxConductance);
+  array[getCamIdx(rowIdx, colIdx, 1, camDim)] = upperBdConductance;
+};
+
+void addRRAMNewMapping(Mapping *mapping, ACAMArray *array) {
+  // get info
+  uint32_t nRows = array->getNRows();
+  uint32_t nCols = array->getNCols();
+  assert(nRows != 0 && nCols != 0);
+  uint32_t nBoundaries = array->getDim().nBoundaries;
+  assert(nBoundaries == 2);
+  std::string cellType = mapping->getCellConfig()->design;
+  RRAMCellType cellTypeCUDA = INVALID_RRAM_CELL_TYPE;
+  if (cellType == "6T2M") {
+    cellTypeCUDA = CELL_6T2M;
+  } else if (cellType == "8T2M") {
+    cellTypeCUDA = CELL_8T2M;
+  } else {
+    throw std::runtime_error("Invalid RRAM cell type");
+  }
+
+  // copy data
+  uint64_t nByte = nRows * nCols * nBoundaries * sizeof(double);
+  double *camRawData_h = array->getData(FOR_CUDA_MEM_CPY);
+  double *camRawData_d;
+  CHECK(cudaMalloc(&camRawData_d, nByte));
+  CHECK(cudaMemcpy(camRawData_d, camRawData_h, nByte, cudaMemcpyHostToDevice));
+
+  // grid block size
+  const dim3 block(RRAM_NEWMAPPING_THREAD_X, RRAM_NEWMAPPING_THREAD_Y);
+  const dim3 grid((long long int)(nCols - 1) / block.x + 1,
+                  (long long int)(nRows - 1) / block.y + 1);
+  checkGridBlockSize(grid, block);
+
+  // cuda stream
+  cudaStream_t stream;
+  CHECK(cudaStreamCreate(&stream));
+
+  // convert to conductance
+  Vbd2conductance<<<grid, block, 0, stream>>>(camRawData_d, array->getDim(),
+                                              cellTypeCUDA);
+
+  // // for debug
+  // CHECK(cudaStreamSynchronize(stream));
+  // CHECK(cudaMemcpy(camRawData_h, camRawData_d, nByte, cudaMemcpyDeviceToHost));
+  // array->toCSV("/workspaces/CuCAMASim/0before.csv");
+
+  for (auto it : mapping->getMappingConfig()->strategies) {
+    if (it.first == "expandConductanceAll") {
+      std::map<std::string, std::string> params = it.second;
+      assert((params["strategy"] == "fixed size") &&
+             "Only support fixed size strategy now");
+      assert(mapping->getCellConfig()->device == "RRAM");
+      double expandSize = std::stod(params["expandSize"]);
+      expandConductanceAll
+          <<<grid, block, 0, stream>>>(camRawData_d, array->getDim(), expandSize,
+                                       mapping->getCellConfig()->minConductance,
+                                       mapping->getCellConfig()->maxConductance);
+      std::cout << "added expandConductanceAll mapping strategy" << std::endl;
+    }
+  }
+
+  // convert back to Vbd
+  conductance2Vbd<<<grid, block, 0, stream>>>(camRawData_d, array->getDim(),
+                                              cellTypeCUDA);
+
+  // post process
+  CHECK(cudaStreamSynchronize(stream));
+  CHECK(cudaMemcpy(camRawData_h, camRawData_d, nByte, cudaMemcpyDeviceToHost));
+  CHECK(cudaFree(camRawData_d));
+  CHECK(cudaStreamDestroy(stream));
+};
