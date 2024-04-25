@@ -245,7 +245,7 @@ class CAMArrayBase : public Data {
   inline bool isDimMatch() const {
     return col2featureID.size() == dim.nCols && row2classID.size() == dim.nRows;
   }
-  inline const double *getData(RawDataAccessType type) const {
+  inline double *getData(RawDataAccessType type) const {
     assert(data != nullptr && "data is not initialized");
     assert(type == FOR_CUDA_MEM_CPY &&
            "direct data access is only for CUDA memory copy!");

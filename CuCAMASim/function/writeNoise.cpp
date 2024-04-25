@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "function/cuda/writeNoise.cuh"
+#include "function/cuda/rram.cuh"
 #include "util/data.h"
 
 void WriteNoise::addWriteNoise(CAMArrayBase *camArray) {
@@ -17,8 +17,8 @@ void WriteNoise::addWriteNoise(CAMArrayBase *camArray) {
     }
     addRRAMNoise(this, dynamic_cast<ACAMArray *>(camArray));
   } else {
-    throw std::runtime_error("Device" + noiseConfig->device +
-                             "is not supported yet");
+    throw std::runtime_error("Add write noise for device '" + noiseConfig->device +
+                             "' is not supported yet");
   }
 
   std::cerr << "\033[33mWARNING: WriteNoise::addWriteNoise() is still under "

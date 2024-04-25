@@ -27,7 +27,7 @@ class WriteNoise {
   void addWriteNoise(CAMArrayBase *camArray);
 
   inline bool getHasNoise() const { return hasNoise; }
-  inline std::map<std::string, std::map<std::string, std::string>> getNoiseType() const { return noiseType; }
+  inline const std::map<std::string, std::map<std::string, std::string>>& getNoiseType() const { return noiseType; }
   inline std::string getCellDesign() const { return cellDesign; }
   inline double getMinConductance() const { return minConductance; }
   inline double getMaxConductance() const { return maxConductance; }

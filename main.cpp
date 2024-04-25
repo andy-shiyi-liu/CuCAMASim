@@ -8,8 +8,8 @@
 #include "dt2cam.h"
 #include "matio.h"
 
-// #define DATASET_NAME "gas_normalized"
-#define DATASET_NAME "gas"
+#define DATASET_NAME "gas_normalized"
+// #define DATASET_NAME "gas"
 
 Dataset *loadDataset(std::string datasetName) {
   std::cout << "Loading dataset: " << datasetName << std::endl;

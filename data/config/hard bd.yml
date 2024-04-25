@@ -20,7 +20,7 @@ cell:
   writeNoise:
     cellDesign: 6T2M
     device: RRAM
-    hasWriteNoise: false
+    hasWriteNoise: true
     maxConductance: 150
     minConductance: 0
     noiseType:

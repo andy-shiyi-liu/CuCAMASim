@@ -8,8 +8,8 @@ __global__ void exactMerge(const uint32_t *matchIdx_d,
   const uint32_t nx = nVectors;
   assert(nx != 0);
 
-  uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x;
-  uint64_t iy = threadIdx.y + blockIdx.y * blockDim.y;
+  getIx;
+  getIy;
   assert(iy == 0 &&
          "We assume 1d block and 1d grid for this kernel, iy should be 0");
   if (ix >= nx) {

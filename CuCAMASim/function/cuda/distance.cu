@@ -25,10 +25,10 @@ __global__ void rangeQueryPairwise(const double* rawCamData,
   const uint32_t ny = queryDim.nVectors;
   assert(nx != 0 && ny != 0);
 
-  uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x;
-  uint64_t iy = threadIdx.y + blockIdx.y * blockDim.y;
+  getIx;
+  getIy;
   assert(threadIdx.z == 0);
-  uint64_t idx = ix + iy * nx;
+  getIdx2D;
   if (ix >= nx || iy >= ny) {
     // printf("ix: %llu, nx: %u, iy: %llu, ny: %u, returned.\n", ix, nx, iy,
     // ny);

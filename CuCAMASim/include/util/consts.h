@@ -5,6 +5,15 @@
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
 
+// add RRAM noise
+//  - thread and block size when adding RRAM noise
+#define RRAM_NOISE_THREAD_X 32
+#define RRAM_NOISE_THREAD_Y 32
+//  - newton's method for solving conductance from Vbd
+#define RRAM_STARTPOINT 75
+#define RRAM_MAX_ITER 100
+#define RRAM_TOLERANCE 1e-8
+
 // Maximum number of rows that can be matched for a single query.
 // This is necessary for allocating GPU memory.
 #define MAX_MATCHED_ROWS 10

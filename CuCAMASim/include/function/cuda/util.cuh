@@ -19,6 +19,11 @@
     }                                                                  \
   }
 
+#define getIx uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x
+#define getIy uint64_t iy =threadIdx.y + blockIdx.y * blockDim.y
+#define getIdx2D uint64_t idx = ix + iy * nx;
+#define outOfRangeReturn2D if (ix >= nx || iy >= ny) { return; }
+
 extern "C" {
 __device__ inline uint64_t getCamIdx(const uint32_t rowIdx,
                                      const uint32_t colIdx,
