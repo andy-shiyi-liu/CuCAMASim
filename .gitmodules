@@ -1,0 +1,3 @@
+[submodule "run_script"]
+	path = run_script
+	url = ssh://git@192.168.1.5:6003/researches/autorun-script-for-cucamasim.git

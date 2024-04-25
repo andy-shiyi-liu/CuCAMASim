@@ -5,6 +5,10 @@ from typing import Union, Tuple
 from openml.datasets import get_dataset as get_openml_dataset
 from openml.datasets.dataset import OpenMLDataset
 from sklearn.model_selection import train_test_split
+from scipy.io import loadmat
+from pathlib import Path
+
+scriptDir = Path(__file__).parent
 
 
 def load_dataset(testSize=0.3):
@@ -27,9 +31,19 @@ def load_dataset(testSize=0.3):
     )
     print("Finished loading 'gas-drift-different-concentrations' dataset.")
 
-    x_train, x_test, y_train, y_test = x_train.to_numpy(), x_test.to_numpy(), y_train.to_numpy(), y_test.to_numpy() 
+    x_train, x_test, y_train, y_test = (
+        x_train.to_numpy(),
+        x_test.to_numpy(),
+        y_train.to_numpy(),
+        y_test.to_numpy(),
+    )
 
-    x_train, x_test, y_train, y_test = x_train.astype(np.int32), x_test.astype(np.int32), y_train.astype(np.int32), y_test.astype(np.int32)
+    x_train, x_test, y_train, y_test = (
+        x_train.astype(np.int32),
+        x_test.astype(np.int32),
+        y_train.astype(np.int32),
+        y_test.astype(np.int32),
+    )
 
     y_train -= 1
     y_test -= 1
@@ -38,3 +52,13 @@ def load_dataset(testSize=0.3):
     # y_test = y_test[0:99]
 
     return x_train, x_test, y_train, y_test
+
+
+def loadDatasetNormalized():
+    dataset = loadmat(scriptDir / "gas_concentrations_normalized.mat")
+    return (
+        dataset["trainInputs"].T,
+        dataset["testInputs"].T,
+        dataset["trainLabels"].T.flatten(),
+        dataset["testLabels"].T.flatten(),
+    )

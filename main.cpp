@@ -7,10 +7,7 @@
 #include "CuCAMASim.h"
 #include "dt2cam.h"
 #include "matio.h"
-
-#define DATASET_NAME "BTSC_adapted_rand"
-// #define DATASET_NAME "gas"
-// #define DATASET_NAME "gas_normalized"
+#include "util/CLI11.hpp"
 
 Dataset *loadDataset(std::string datasetName) {
   std::cout << "Loading dataset: " << datasetName << std::endl;
@@ -41,16 +38,30 @@ std::string treeTextPath(std::string datasetName) {
   return treeTextPath[datasetName];
 }
 
-int main() {
-  DecisionTree dt(treeTextPath(DATASET_NAME));
+int main(int argc, char *argv[]) {
+  CLI::App app{"Decision Tree inference on ACAM"};
+
+  // Adding options
+  std::string configPath = "/workspaces/CuCAMASim/data/config/hard bd.yml";
+  app.add_option("--config", configPath, "CAM config file path");
+
+  std::string datasetName = "BTSC_adapted_rand";
+  app.add_option("--dataset", datasetName,
+                 "Name of dataset to be used. Available options: "
+                 "BTSC_adapted_rand, gas_normalized, gas");
+
+  // Parsing command-line arguments
+  CLI11_PARSE(app, argc, argv);
+
+  DecisionTree dt(treeTextPath(datasetName));
   ACAMArray *camArray = dt.toACAM();
 
-  Dataset *dataset = loadDataset(DATASET_NAME);
+  Dataset *dataset = loadDataset(datasetName);
 
   std::cout << "Software Accuracy: "
             << dt.score(dataset->testInputs, dataset->testLabels) << std::endl;
 
-  CamConfig camConfig("/workspaces/CuCAMASim/data/config/hard bd.yml");
+  CamConfig camConfig(configPath);
   CuCAMASim camasim(&camConfig);
 
   camasim.write(camArray);

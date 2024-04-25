@@ -23,6 +23,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif()
 endif()
 
+
 # Include header files from specific directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/CuCAMASim/include/
