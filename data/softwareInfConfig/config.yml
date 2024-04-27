@@ -1,0 +1,6 @@
+weightVar:
+  enabled: true
+  type: bounded_gaissuan
+  stdDev: 1
+  bound: 1
+  sampleTimes: 10

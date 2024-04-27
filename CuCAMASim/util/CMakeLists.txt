@@ -1,6 +1,7 @@
 aux_source_directory(. UTIL_DIR)
 
 include(FetchContent)
+
 # yaml package
 FetchContent_Declare(
   yaml-cpp
@@ -19,7 +20,6 @@ include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
 
 add_library(util ${UTIL_DIR})
-# Include directories for matio
 target_link_libraries(util PUBLIC yaml-cpp::yaml-cpp matio)
 
 # Treat warnings as errors for C and C++ files

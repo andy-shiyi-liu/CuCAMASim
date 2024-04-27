@@ -1,14 +1,19 @@
 #include "dt2cam.h"
 
+#include <yaml-cpp/yaml.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <iomanip>
+#include <random>
 #include <regex>
 
 #include "util/data.h"
 
 void DecisionTree::parseTreeText() {
+  assert(rootNode == nullptr && "ERROR: double parse to the same tree text!");
   uint64_t lineID = 0;
   rootNode = parseSubTree(lineID, nullptr);
   // assert that all lines are parsed
@@ -97,12 +102,12 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
   }
 
   for (LeafNode* leafNode : leafNodes) {
-    TreeNode* currentNode = leafNode;
+    const TreeNode* currentNode = leafNode;
     camArray->row2classID.push_back(leafNode->getClassID());
     while (currentNode->getParent() != nullptr) {
       // assert that parentNode is a StemNode
       assert(currentNode->getParent()->getType() == STEM_NODE);
-      StemNode* parentNode = dynamic_cast<StemNode*>(currentNode->getParent());
+      const StemNode* parentNode = dynamic_cast<const StemNode*>(currentNode->getParent());
       uint32_t featureID = parentNode->getFeatureID();
       uint8_t boundaryID;
       if (currentNode == parentNode->getLeNode()) {
@@ -169,34 +174,69 @@ void DecisionTree::printSubTree(TreeNode* treeNode, std::string spacing) {
   return;
 }
 
-void DecisionTree::pred(InputData *input, std::vector<uint32_t> &predLabel) {
+void DecisionTree::pred(InputData* input, std::vector<uint32_t>& predLabel) {
   predLabel.resize(input->getNVectors());
   for (uint32_t rowIdx = 0; rowIdx < input->getNVectors(); rowIdx++) {
     predRow(input, rowIdx, rootNode, predLabel);
   }
 }
 
-void DecisionTree::predRow(InputData *input, uint32_t rowIdx, TreeNode* node,
-                           std::vector<uint32_t> &predLabel) {
+void DecisionTree::predRow(InputData* input, uint32_t rowIdx, TreeNode* node,
+                           std::vector<uint32_t>& predLabel) {
   if (node->getType() == LEAF_NODE) {
     LeafNode* leafNode = dynamic_cast<LeafNode*>(node);
     predLabel[rowIdx] = leafNode->getClassID();
     return;
-  }else{
+  } else {
     assert(node->getType() == STEM_NODE);
     StemNode* stemNode = dynamic_cast<StemNode*>(node);
-    if(input->at(rowIdx, stemNode->getFeatureID()) <= stemNode->getThreshold()){
+    if (input->at(rowIdx, stemNode->getFeatureID()) <=
+        stemNode->getThreshold()) {
       assert(stemNode->getLeNode() != nullptr);
       predRow(input, rowIdx, stemNode->getLeNode(), predLabel);
-    }else{
+    } else {
       assert(stemNode->getGtNode() != nullptr);
       predRow(input, rowIdx, stemNode->getGtNode(), predLabel);
     }
   }
 }
 
-double DecisionTree::score(InputData *input, LabelData *label){
+double DecisionTree::score(InputData* input, LabelData* label) {
   std::vector<uint32_t> predLabel;
   pred(input, predLabel);
   return label->calculateInferenceAccuracy(predLabel);
+}
+
+void DecisionTree::addNodeVariation(TreeNode* node, const YAML::Node& varConfig) {
+  assert(varConfig["enabled"].as<bool>() == true);
+
+  if (node->getType() == LEAF_NODE) {
+    return;
+  }
+
+  if (varConfig["type"].as<std::string>() == "bounded_gaissuan") {
+    double stdDev = varConfig["stdDev"].as<double>();
+    double bound = varConfig["bound"].as<double>();
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> d(0, stdDev);
+    double variation = d(gen);
+    if (variation > bound) {
+      variation = bound;
+    } else if (variation < -bound) {
+      variation = -bound;
+    }
+    StemNode* stemNode = dynamic_cast<StemNode*>(node);
+    stemNode->setThreshold(stemNode->getThreshold() + variation);
+
+    addNodeVariation(stemNode->getLeNode(), varConfig);
+    addNodeVariation(stemNode->getGtNode(), varConfig);
+  } else {
+    throw std::runtime_error("Unknown weight variation type: " +
+                             varConfig["type"].as<std::string>());
+  }
+}
+
+void DecisionTree::addVariation(const YAML::Node& varConfig) {
+  addNodeVariation(rootNode, varConfig);
 }

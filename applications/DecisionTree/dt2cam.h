@@ -1,6 +1,8 @@
 #ifndef DT2CAM_H
 #define DT2CAM_H
 
+#include <yaml-cpp/yaml.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -20,8 +22,8 @@ class TreeNode {
   TreeNodeType type = INVALID_NODE;
 
  public:
-  virtual TreeNode *getParent() { return parent; }
-  virtual TreeNodeType getType() { return type; };
+  inline virtual const TreeNode *getParent() const  { return parent; }
+  inline virtual TreeNodeType getType() const { return type; };
   virtual ~TreeNode() {}
 };
 
@@ -36,9 +38,9 @@ class LeafNode : public TreeNode {
  public:
   LeafNode(uint32_t classID, TreeNode *parent)
       : classID(classID), parent(parent) {}
-  TreeNodeType getType() override { return type; };
-  uint32_t getClassID() { return classID; };
-  TreeNode *getParent() override { return parent; };
+  inline TreeNodeType getType() const override { return type; };
+  inline uint32_t getClassID() const { return classID; };
+  inline const TreeNode *getParent() const override { return parent; };
   virtual ~LeafNode() {}
 };
 
@@ -63,12 +65,14 @@ class StemNode : public TreeNode {
     this->leNode = leNode;
     this->gtNode = gtNode;
   };
-  uint32_t getFeatureID() { return featureID; };
-  double getThreshold() { return threshold; };
-  TreeNode *getLeNode() { return leNode; };
-  TreeNode *getGtNode() { return gtNode; };
-  TreeNode *getParent() override { return parent; };
-  TreeNodeType getType() override { return type; };
+  inline uint32_t getFeatureID() const { return featureID; };
+  inline double getThreshold() const { return threshold; };
+  inline TreeNode *getLeNode() const { return leNode; };
+  inline TreeNode *getGtNode() const { return gtNode; };
+  inline const TreeNode *getParent() const override { return parent; };
+  inline TreeNodeType getType() const override { return type; };
+
+  inline void setThreshold(double newThreshold) { this->threshold = newThreshold; }
 
   virtual ~StemNode() {
     delete leNode;
@@ -88,12 +92,12 @@ class DecisionTree {
   std::list<double> thresholds;
   TreeNode *rootNode = nullptr;
 
-  void parseTreeText();
   TreeNode *parseSubTree(uint64_t &lineID, TreeNode *parentNode);
   void printSubTree(TreeNode *treeNode, std::string spacing);
   ACAMArray *tree2camThresholdArray();
-  void predRow(InputData *input, uint32_t rowIdx, TreeNode* node,
+  void predRow(InputData *input, uint32_t rowIdx, TreeNode *node,
                std::vector<uint32_t> &predLabel);
+  void addNodeVariation(TreeNode *node, const YAML::Node &config);
 
  public:
   DecisionTree(const std::filesystem::path &treeTextPath) {
@@ -124,7 +128,9 @@ class DecisionTree {
   };
   void pred(InputData *input, std::vector<uint32_t> &predLabel);
   double score(InputData *input, LabelData *label);
+  void addVariation(const YAML::Node &config);
   ACAMArray *toACAM();
+  void parseTreeText();
 };
 
 #endif

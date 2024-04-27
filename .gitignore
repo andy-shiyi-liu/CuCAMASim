@@ -6,3 +6,4 @@ dataset/
 /*.csv
 makefile
 *__pycache__/
+.env
