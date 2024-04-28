@@ -15,12 +15,12 @@ from run_script.util import *
 
 convert.datasetName2matFile(
     "survival_original",
-    workspaceDir / "data/datasets/haberman_survival/survival.mat",
+    workspaceDir / "data/datasets/survival/survival.mat",
     normalize=False,
 )
 
 convert.datasetName2matFile(
     "survival_original",
-    workspaceDir / "data/datasets/haberman_survival/survival_normalized.mat",
-    normalize=False,
+    workspaceDir / "data/datasets/survival/survival_normalized.mat",
+    normalize=True,
 )

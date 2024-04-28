@@ -28,6 +28,11 @@ Dataset *loadDataset(std::string datasetName) {
       {"survival", "/workspaces/CuCAMASim/data/datasets/survival/survival.mat"},
       {"survival_normalized",
        "/workspaces/CuCAMASim/data/datasets/survival/survival_normalized.mat"},
+      {"breast_cancer",
+       "/workspaces/CuCAMASim/data/datasets/breast_cancer/breast_cancer.mat"},
+      {"breast_cancer_normalized",
+       "/workspaces/CuCAMASim/data/datasets/breast_cancer/"
+       "breast_cancer_normalized.mat"},
   };
   Dataset *dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
@@ -48,6 +53,11 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
       {"survival", "/workspaces/CuCAMASim/data/treeText/survival/survival.txt"},
       {"survival_normalized",
        "/workspaces/CuCAMASim/data/treeText/survival/survival_normalized.txt"},
+      {"breast_cancer",
+       "/workspaces/CuCAMASim/data/treeText/breast_cancer/breast_cancer.txt"},
+      {"breast_cancer_normalized",
+       "/workspaces/CuCAMASim/data/treeText/breast_cancer/"
+       "breast_cancer_normalized.txt"},
   };
   return treeTextPath[datasetName];
 }
