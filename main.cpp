@@ -1,9 +1,9 @@
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <map>
-#include <chrono>
 
 #include "CuCAMASim.h"
 #include "dt2cam.h"
@@ -22,7 +22,11 @@ Dataset *loadDataset(std::string datasetName) {
       {"gas",
        "/workspaces/CuCAMASim/data/datasets/gas_concentrations/"
        "gas_concentrations.mat"},
-      {"test", "/workspaces/CuCAMASim/dataset/test/test.mat"}};
+      {"iris", "/workspaces/CuCAMASim/data/datasets/iris/iris.mat"},
+      {"iris_normalized",
+       "/workspaces/CuCAMASim/data/datasets/iris/iris_normalized.mat"},
+      {"test", "/workspaces/CuCAMASim/dataset/test/test.mat"},
+  };
   Dataset *dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
   return dataset;
@@ -35,7 +39,11 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
        "0.0stdDev_100sampleTimes_treeText.txt"},
       {"gas_normalized",
        "/workspaces/CuCAMASim/data/treeText/gas/gas_normalized.txt"},
-      {"gas", "/workspaces/CuCAMASim/data/treeText/gas/gas.txt"}};
+      {"gas", "/workspaces/CuCAMASim/data/treeText/gas/gas.txt"},
+      {"iris", "/workspaces/CuCAMASim/data/treeText/iris/iris.txt"},
+      {"iris_normalized",
+       "/workspaces/CuCAMASim/data/treeText/iris/iris_normalized.txt"},
+  };
   return treeTextPath[datasetName];
 }
 
@@ -116,8 +124,8 @@ int main(int argc, char *argv[]) {
   app.add_option(
       "--task", task,
       "The task which this program is going to perform. Available options: "
-      " - CAM Inference"
-      " - Software Inference"
+      " - CAM_inference"
+      " - software_inference"
       "The default task is " +
           task);
 
@@ -155,7 +163,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   auto stop = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
   std::cout << "Simulation time: " << duration.count() << " ms" << std::endl;
   return 0;
 }

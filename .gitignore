@@ -7,3 +7,5 @@ dataset/
 makefile
 *__pycache__/
 .env
+*._.DS_Store
+*.DS_Store

@@ -3,10 +3,12 @@ from sklearn.model_selection import train_test_split
 from typing import Tuple
 import numpy as np
 from pathlib import Path
+from scipy.io import loadmat
 
 scriptDir = Path(__file__).parent
 
-def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+
+def load_data_from_scratch() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     # Load the Iris dataset
     iris = load_iris()
     X = iris.data  # Features
@@ -18,6 +20,7 @@ def load_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     )
 
     return X_train, X_test, y_train, y_test
+
 
 def load_data_2feature():
     dataset = np.load(scriptDir.joinpath(f"iris_2feature.npz"))
@@ -45,3 +48,44 @@ def load_data_2feature():
         test_inputs,
         test_classes,
     )
+
+
+def save2mat():
+    trainInputs, testInputs, trainLabels, testLabels = load_data_from_scratch()
+
+
+def load_data():
+    mat_load = loadmat(scriptDir / "iris.mat")
+
+    trainInputs = mat_load["trainInputs"]
+    testInputs = mat_load["testInputs"]
+
+    trainLabels = mat_load["trainLabels"]
+    testLabels = mat_load["testLabels"]
+
+    trainInputs, testInputs, trainLabels, testLabels = (
+        trainInputs.T,
+        testInputs.T,
+        trainLabels.flatten(),
+        testLabels.flatten(),
+    )
+
+    return trainInputs, testInputs, trainLabels, testLabels
+
+def load_data_normalized():
+    mat_load = loadmat(scriptDir / "iris_normalized.mat")
+
+    trainInputs = mat_load["trainInputs"]
+    testInputs = mat_load["testInputs"]
+
+    trainLabels = mat_load["trainLabels"]
+    testLabels = mat_load["testLabels"]
+
+    trainInputs, testInputs, trainLabels, testLabels = (
+        trainInputs.T,
+        testInputs.T,
+        trainLabels.flatten(),
+        testLabels.flatten(),
+    )
+
+    return trainInputs, testInputs, trainLabels, testLabels
