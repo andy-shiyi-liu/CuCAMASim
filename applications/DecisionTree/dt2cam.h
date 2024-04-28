@@ -114,7 +114,7 @@ class DecisionTree {
       file.close();
     } else {
       // Handle error when file cannot be opened
-      throw std::runtime_error("Error: file " + std::string(treeTextPath) +
+      throw std::runtime_error("Error: tree text file " + std::string(treeTextPath) +
                                " cannot be opened");
     }
   };

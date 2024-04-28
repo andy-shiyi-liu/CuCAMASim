@@ -6,7 +6,7 @@ array:
   bit: 3
   cell: ACAM
   col: 128
-  row: 200
+  row: 128
   sensing: exact
   sensingLimit: 0
   useEVACAMCost: false
@@ -25,8 +25,8 @@ cell:
     minConductance: 0
     noiseType:
       variation:
-        stdDev: 5
-        bound: 7.5
+        stdDev: 0
+        bound: 0
         type: bounded_gaussian
 query:
   FuncSim: true
@@ -38,12 +38,12 @@ query:
   searchScheme: exact
 mapping:
   N2VConvert:
-    maxConvertConductance: 140
-    minConvertConductance: 10
+    maxConvertConductance: 150
+    minConvertConductance: 0
     # lineConvertRangeMin: -0.1
     # lineConvertRangeMax: 1.1
     # queryClipRangeMin: 0.2
     # queryClipRangeMax: 0.8
   expandConductanceAll:
     strategy: "fixed size"
-    expandSize: 7.5
+    expandSize: 0

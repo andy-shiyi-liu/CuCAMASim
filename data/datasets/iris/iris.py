@@ -8,7 +8,7 @@ from scipy.io import loadmat
 scriptDir = Path(__file__).parent
 
 
-def load_data_from_scratch() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def load_original_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     # Load the Iris dataset
     iris = load_iris()
     X = iris.data  # Features
@@ -51,7 +51,7 @@ def load_data_2feature():
 
 
 def save2mat():
-    trainInputs, testInputs, trainLabels, testLabels = load_data_from_scratch()
+    trainInputs, testInputs, trainLabels, testLabels = load_original_data()
 
 
 def load_data():

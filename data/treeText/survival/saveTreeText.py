@@ -16,7 +16,7 @@ from run_script.util import *
 
 
 def saveTreeText(datasetName: str):
-    outputPath = scriptDir / f"{datasetName}.txt"
+    outputPath = workspaceDir / "data/treeText" / f"{datasetName}.txt"
     trainInputs, testInputs, trainLabels, testLabels = util.loadDataset(datasetName)
 
     print("trainInputs.shape: ", trainInputs.shape)

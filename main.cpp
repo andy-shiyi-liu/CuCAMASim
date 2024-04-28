@@ -25,7 +25,9 @@ Dataset *loadDataset(std::string datasetName) {
       {"iris", "/workspaces/CuCAMASim/data/datasets/iris/iris.mat"},
       {"iris_normalized",
        "/workspaces/CuCAMASim/data/datasets/iris/iris_normalized.mat"},
-      {"test", "/workspaces/CuCAMASim/dataset/test/test.mat"},
+      {"survival", "/workspaces/CuCAMASim/data/datasets/survival/survival.mat"},
+      {"survival_normalized",
+       "/workspaces/CuCAMASim/data/datasets/survival/survival_normalized.mat"},
   };
   Dataset *dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
@@ -43,6 +45,9 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
       {"iris", "/workspaces/CuCAMASim/data/treeText/iris/iris.txt"},
       {"iris_normalized",
        "/workspaces/CuCAMASim/data/treeText/iris/iris_normalized.txt"},
+      {"survival", "/workspaces/CuCAMASim/data/treeText/survival/survival.txt"},
+      {"survival_normalized",
+       "/workspaces/CuCAMASim/data/treeText/survival/survival_normalized.txt"},
   };
   return treeTextPath[datasetName];
 }
