@@ -107,7 +107,8 @@ ACAMArray* DecisionTree::tree2camThresholdArray() {
     while (currentNode->getParent() != nullptr) {
       // assert that parentNode is a StemNode
       assert(currentNode->getParent()->getType() == STEM_NODE);
-      const StemNode* parentNode = dynamic_cast<const StemNode*>(currentNode->getParent());
+      const StemNode* parentNode =
+          dynamic_cast<const StemNode*>(currentNode->getParent());
       uint32_t featureID = parentNode->getFeatureID();
       uint8_t boundaryID;
       if (currentNode == parentNode->getLeNode()) {
@@ -207,7 +208,8 @@ double DecisionTree::score(InputData* input, LabelData* label) {
   return label->calculateInferenceAccuracy(predLabel);
 }
 
-void DecisionTree::addNodeVariation(TreeNode* node, const YAML::Node& varConfig) {
+void DecisionTree::addNodeVariation(TreeNode* node,
+                                    const YAML::Node& varConfig) {
   assert(varConfig["enabled"].as<bool>() == true);
 
   if (node->getType() == LEAF_NODE) {
@@ -239,4 +241,33 @@ void DecisionTree::addNodeVariation(TreeNode* node, const YAML::Node& varConfig)
 
 void DecisionTree::addVariation(const YAML::Node& varConfig) {
   addNodeVariation(rootNode, varConfig);
+}
+
+std::filesystem::path getTreeTextPath(std::string datasetName) {
+  std::map<std::string, std::filesystem::path> treeTextPath = {
+      {"BTSC_adapted_rand",
+       "/workspaces/CuCAMASim/data/treeText/BTSC/"
+       "0.0stdDev_100sampleTimes_treeText.txt"},
+      {"gas_normalized",
+       "/workspaces/CuCAMASim/data/treeText/gas/gas_normalized.txt"},
+      {"gas", "/workspaces/CuCAMASim/data/treeText/gas/gas.txt"},
+      {"iris", "/workspaces/CuCAMASim/data/treeText/iris/iris.txt"},
+      {"iris_normalized",
+       "/workspaces/CuCAMASim/data/treeText/iris/iris_normalized.txt"},
+      {"survival", "/workspaces/CuCAMASim/data/treeText/survival/survival.txt"},
+      {"survival_normalized",
+       "/workspaces/CuCAMASim/data/treeText/survival/survival_normalized.txt"},
+      {"breast_cancer",
+       "/workspaces/CuCAMASim/data/treeText/breast_cancer/breast_cancer.txt"},
+      {"breast_cancer_normalized",
+       "/workspaces/CuCAMASim/data/treeText/breast_cancer/"
+       "breast_cancer_normalized.txt"},
+      {"MNIST", "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST.txt"},
+      {"MNIST_normalized",
+       "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST_normalized.txt"},
+      {"MNIST_small", "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST.txt"},
+      {"MNIST_small_normalized",
+       "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST_normalized.txt"},
+  };
+  return treeTextPath[datasetName];
 }

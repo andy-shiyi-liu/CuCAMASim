@@ -342,3 +342,38 @@ double LabelData::calculateInferenceAccuracy(
   assert(correctCnt <= getNVectors());
   return double(correctCnt) / double(getNVectors());
 }
+
+Dataset *loadDataset(std::string datasetName) {
+  std::cout << "Loading dataset: " << datasetName << std::endl;
+  std::map<std::string, std::filesystem::path> datasetPath = {
+      {"BTSC_adapted_rand",
+       "/workspaces/CuCAMASim/data/datasets/BelgiumTSC/"
+       "300train_100validation_-1test.mat"},
+      {"gas_normalized",
+       "/workspaces/CuCAMASim/data/datasets/gas_concentrations/"
+       "gas_concentrations_normalized.mat"},
+      {"gas",
+       "/workspaces/CuCAMASim/data/datasets/gas_concentrations/"
+       "gas_concentrations.mat"},
+      {"iris", "/workspaces/CuCAMASim/data/datasets/iris/iris.mat"},
+      {"iris_normalized",
+       "/workspaces/CuCAMASim/data/datasets/iris/iris_normalized.mat"},
+      {"survival", "/workspaces/CuCAMASim/data/datasets/survival/survival.mat"},
+      {"survival_normalized",
+       "/workspaces/CuCAMASim/data/datasets/survival/survival_normalized.mat"},
+      {"breast_cancer",
+       "/workspaces/CuCAMASim/data/datasets/breast_cancer/breast_cancer.mat"},
+      {"breast_cancer_normalized",
+       "/workspaces/CuCAMASim/data/datasets/breast_cancer/"
+       "breast_cancer_normalized.mat"},
+      {"MNIST", "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST.mat"},
+      {"MNIST_normalized",
+       "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_normalized.mat"},
+      {"MNIST_small",
+       "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_small.mat"},
+      {"MNIST_small_normalized",
+       "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_small_normalized.mat"}};
+  Dataset *dataset = new Dataset(datasetPath[datasetName]);
+  std::cout << "Dataset loaded!" << std::endl;
+  return dataset;
+}

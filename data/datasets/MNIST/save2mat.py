@@ -24,3 +24,15 @@ convert.datasetName2matFile(
     workspaceDir / "data/datasets/MNIST/MNIST_normalized.mat",
     normalize=True,
 )
+
+convert.datasetName2matFile(
+    "MNIST_small_original",
+    workspaceDir / "data/datasets/MNIST/MNIST_small.mat",
+    normalize=False,
+)
+
+convert.datasetName2matFile(
+    "MNIST_small_original",
+    workspaceDir / "data/datasets/MNIST/MNIST_small_normalized.mat",
+    normalize=True,
+)

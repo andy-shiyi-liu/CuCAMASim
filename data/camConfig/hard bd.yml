@@ -5,8 +5,8 @@ arch:
 array:
   bit: 3
   cell: ACAM
-  col: 128
-  row: 128
+  col: 512
+  row: 3330
   sensing: exact
   sensingLimit: 0
   useEVACAMCost: false

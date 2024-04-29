@@ -30,7 +30,7 @@ def saveTreeText(datasetName: str):
     from sklearn.metrics import accuracy_score
 
     clf = DecisionTreeClassifier(
-        max_depth=5,
+        # max_depth=5,
         criterion="entropy",
     )
     # clf = RandomForestClassifier(n_estimators=15, max_depth=10)
@@ -46,5 +46,5 @@ def saveTreeText(datasetName: str):
 
 
 if __name__ == "__main__":
-    saveTreeText("breast_cancer")
-    saveTreeText("breast_cancer_normalized")
+    saveTreeText("MNIST")
+    saveTreeText("MNIST_normalized")

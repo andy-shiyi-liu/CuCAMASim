@@ -133,4 +133,6 @@ class DecisionTree {
   void parseTreeText();
 };
 
+std::filesystem::path getTreeTextPath(std::string datasetName) ;
+
 #endif

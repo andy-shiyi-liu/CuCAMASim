@@ -111,7 +111,8 @@ class LabelData : public Data {
     return data[vecNum];
   }
   inline uint32_t getNVectors() const { return dim.nVectors; }
-  double calculateInferenceAccuracy(const std::vector<uint32_t> &predLabel) const ;
+  double calculateInferenceAccuracy(
+      const std::vector<uint32_t> &predLabel) const;
   ~LabelData() {
     if (data != nullptr) {
       delete[] data;
@@ -170,7 +171,8 @@ class SimResult {
   void writeFuncSimResult(uint32_t *result, uint32_t nVectors,
                           uint32_t nMatchedRowsMax);
   void printFuncSimResult() const;
-  double calculateInferenceAccuracy(const LabelData* label, const std::vector<uint32_t>* row2classID) const;
+  double calculateInferenceAccuracy(
+      const LabelData *label, const std::vector<uint32_t> *row2classID) const;
 
   inline std::vector<std::vector<uint32_t>> getMatchedIdx() const {
     assert(func.valid && "Function simulation result is not valid");
@@ -251,12 +253,12 @@ class CAMArrayBase : public Data {
            "direct data access is only for CUDA memory copy!");
     return data;
   }
-  inline const std::vector<uint32_t>* getCol2featureID() const {
+  inline const std::vector<uint32_t> *getCol2featureID() const {
     assert(col2featureID.size() == dim.nCols &&
            "col2featureID is not initialized");
     return &col2featureID;
   }
-  inline const std::vector<uint32_t>* getRow2classID() const {
+  inline const std::vector<uint32_t> *getRow2classID() const {
     assert(row2classID.size() == dim.nRows && "row2classID is not initialized");
     return &row2classID;
   }
@@ -566,5 +568,7 @@ class QueryData : public Data {
     }
   };
 };
+
+Dataset *loadDataset(std::string datasetName);
 
 #endif

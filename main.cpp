@@ -10,58 +10,6 @@
 #include "matio.h"
 #include "util/CLI11.hpp"
 
-Dataset *loadDataset(std::string datasetName) {
-  std::cout << "Loading dataset: " << datasetName << std::endl;
-  std::map<std::string, std::filesystem::path> datasetPath = {
-      {"BTSC_adapted_rand",
-       "/workspaces/CuCAMASim/data/datasets/BelgiumTSC/"
-       "300train_100validation_-1test.mat"},
-      {"gas_normalized",
-       "/workspaces/CuCAMASim/data/datasets/gas_concentrations/"
-       "gas_concentrations_normalized.mat"},
-      {"gas",
-       "/workspaces/CuCAMASim/data/datasets/gas_concentrations/"
-       "gas_concentrations.mat"},
-      {"iris", "/workspaces/CuCAMASim/data/datasets/iris/iris.mat"},
-      {"iris_normalized",
-       "/workspaces/CuCAMASim/data/datasets/iris/iris_normalized.mat"},
-      {"survival", "/workspaces/CuCAMASim/data/datasets/survival/survival.mat"},
-      {"survival_normalized",
-       "/workspaces/CuCAMASim/data/datasets/survival/survival_normalized.mat"},
-      {"breast_cancer",
-       "/workspaces/CuCAMASim/data/datasets/breast_cancer/breast_cancer.mat"},
-      {"breast_cancer_normalized",
-       "/workspaces/CuCAMASim/data/datasets/breast_cancer/"
-       "breast_cancer_normalized.mat"},
-  };
-  Dataset *dataset = new Dataset(datasetPath[datasetName]);
-  std::cout << "Dataset loaded!" << std::endl;
-  return dataset;
-}
-
-std::filesystem::path getTreeTextPath(std::string datasetName) {
-  std::map<std::string, std::filesystem::path> treeTextPath = {
-      {"BTSC_adapted_rand",
-       "/workspaces/CuCAMASim/data/treeText/BTSC/"
-       "0.0stdDev_100sampleTimes_treeText.txt"},
-      {"gas_normalized",
-       "/workspaces/CuCAMASim/data/treeText/gas/gas_normalized.txt"},
-      {"gas", "/workspaces/CuCAMASim/data/treeText/gas/gas.txt"},
-      {"iris", "/workspaces/CuCAMASim/data/treeText/iris/iris.txt"},
-      {"iris_normalized",
-       "/workspaces/CuCAMASim/data/treeText/iris/iris_normalized.txt"},
-      {"survival", "/workspaces/CuCAMASim/data/treeText/survival/survival.txt"},
-      {"survival_normalized",
-       "/workspaces/CuCAMASim/data/treeText/survival/survival_normalized.txt"},
-      {"breast_cancer",
-       "/workspaces/CuCAMASim/data/treeText/breast_cancer/breast_cancer.txt"},
-      {"breast_cancer_normalized",
-       "/workspaces/CuCAMASim/data/treeText/breast_cancer/"
-       "breast_cancer_normalized.txt"},
-  };
-  return treeTextPath[datasetName];
-}
-
 double CAMInference(const std::filesystem::path configPath,
                     const std::filesystem::path treeTextPath,
                     const std::string datasetName) {
@@ -70,6 +18,9 @@ double CAMInference(const std::filesystem::path configPath,
 
   DecisionTree dt(treeTextPath);
   ACAMArray *camArray = dt.toACAM();
+
+  std::cout << "CAM array size after DT mapping: " << camArray->getDim().nCols
+            << " Cols, " << camArray->getDim().nRows << " Rows" << std::endl;
 
   Dataset *dataset = loadDataset(datasetName);
 
