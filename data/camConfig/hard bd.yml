@@ -5,7 +5,7 @@ arch:
 array:
   bit: 3
   cell: ACAM
-  col: 512
+  col: 450
   row: 3330
   sensing: exact
   sensingLimit: 0

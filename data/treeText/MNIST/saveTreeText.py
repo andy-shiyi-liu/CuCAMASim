@@ -48,3 +48,5 @@ def saveTreeText(datasetName: str):
 if __name__ == "__main__":
     saveTreeText("MNIST")
     saveTreeText("MNIST_normalized")
+    saveTreeText("MNIST_small")
+    saveTreeText("MNIST_small_normalized")
