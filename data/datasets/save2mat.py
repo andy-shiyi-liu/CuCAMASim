@@ -14,13 +14,13 @@ if not f"{workspaceDir}" in sys.path:
 from run_script.util import *
 
 convert.datasetName2matFile(
-    "eye_movements_original",
-    workspaceDir / "data/datasets/eye_movements/eye_movements.mat",
+    "gesture_phase_segmentation_original",
+    workspaceDir / "data/datasets/gesture_phase_segmentation/gesture_phase_segmentation.mat",
     normalize=False,
 )
 
 convert.datasetName2matFile(
-    "eye_movements_original",
-    workspaceDir / "data/datasets/eye_movements/eye_movements_normalized.mat",
+    "gesture_phase_segmentation_original",
+    workspaceDir / "data/datasets/gesture_phase_segmentation/gesture_phase_segmentation_normalized.mat",
     normalize=True,
 )

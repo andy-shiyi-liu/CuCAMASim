@@ -378,6 +378,12 @@ Dataset* loadDataset(std::string datasetName) {
       {"eye_movements_normalized",
        "/workspaces/CuCAMASim/data/datasets/eye_movements/"
        "eye_movements_normalized.mat"},
+      {"gesture_phase_segmentation",
+       "/workspaces/CuCAMASim/data/datasets/gesture_phase_segmentation/"
+       "gesture_phase_segmentation.mat"},
+      {"gesture_phase_segmentation_normalized",
+       "/workspaces/CuCAMASim/data/datasets/gesture_phase_segmentation/"
+       "gesture_phase_segmentation_normalized.mat"},
   };
   Dataset* dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;

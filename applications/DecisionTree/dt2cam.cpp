@@ -274,6 +274,12 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
       {"eye_movements_normalized",
        "/workspaces/CuCAMASim/data/treeText/eye_movements/"
        "eye_movements_normalized.txt"},
+      {"gesture_phase_segmentation",
+       "/workspaces/CuCAMASim/data/treeText/gesture_phase_segmentation/"
+       "gesture_phase_segmentation.txt"},
+      {"gesture_phase_segmentation_normalized",
+       "/workspaces/CuCAMASim/data/treeText/gesture_phase_segmentation/"
+       "gesture_phase_segmentation_normalized.txt"},
   };
   return treeTextPath[datasetName];
 }

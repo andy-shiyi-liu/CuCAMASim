@@ -103,8 +103,7 @@ int main(int argc, char *argv[]) {
 
   std::string datasetName = "BTSC_adapted_rand";
   app.add_option("--dataset", datasetName,
-                 "Name of dataset to be used. Available options: "
-                 "BTSC_adapted_rand, gas_normalized, gas");
+                 "Name of dataset to be used.");
 
   std::string treeTextPath = "default";
   app.add_option("--use_trained_tree", treeTextPath,
