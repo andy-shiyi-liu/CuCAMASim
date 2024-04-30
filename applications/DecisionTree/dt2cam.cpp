@@ -269,6 +269,11 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
        "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST_small.txt"},
       {"MNIST_small_normalized",
        "/workspaces/CuCAMASim/data/treeText/MNIST/MNIST_small_normalized.txt"},
+      {"eye_movements",
+       "/workspaces/CuCAMASim/data/treeText/eye_movements/eye_movements.txt"},
+      {"eye_movements_normalized",
+       "/workspaces/CuCAMASim/data/treeText/eye_movements/"
+       "eye_movements_normalized.txt"},
   };
   return treeTextPath[datasetName];
 }

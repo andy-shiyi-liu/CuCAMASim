@@ -343,7 +343,7 @@ double LabelData::calculateInferenceAccuracy(
   return double(correctCnt) / double(getNVectors());
 }
 
-Dataset *loadDataset(std::string datasetName) {
+Dataset* loadDataset(std::string datasetName) {
   std::cout << "Loading dataset: " << datasetName << std::endl;
   std::map<std::string, std::filesystem::path> datasetPath = {
       {"BTSC_adapted_rand",
@@ -372,8 +372,14 @@ Dataset *loadDataset(std::string datasetName) {
       {"MNIST_small",
        "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_small.mat"},
       {"MNIST_small_normalized",
-       "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_small_normalized.mat"}};
-  Dataset *dataset = new Dataset(datasetPath[datasetName]);
+       "/workspaces/CuCAMASim/data/datasets/MNIST/MNIST_small_normalized.mat"},
+      {"eye_movements",
+       "/workspaces/CuCAMASim/data/datasets/eye_movements/eye_movements.mat"},
+      {"eye_movements_normalized",
+       "/workspaces/CuCAMASim/data/datasets/eye_movements/"
+       "eye_movements_normalized.mat"},
+  };
+  Dataset* dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
   return dataset;
 }

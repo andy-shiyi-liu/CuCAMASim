@@ -21,7 +21,7 @@
 
 // Maximum number of rows that can be matched for a single query.
 // This is necessary for allocating GPU memory.
-#define MAX_MATCHED_ROWS 2000
+#define MAX_MATCHED_ROWS 1660
 
 // thread and block size used in arraySearch()
 //  - when calculating distance for every query vector, we launch a 2D grid of
