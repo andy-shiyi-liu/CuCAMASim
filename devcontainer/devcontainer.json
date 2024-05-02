@@ -21,9 +21,10 @@
                 "github.copilot-chat",
                 "yzhang.markdown-all-in-one",
                 "mechatroner.rainbow-csv",
-                "ms-azuretools.vscode-docker"
+                "ms-azuretools.vscode-docker",
+                "nvidia.nsight-vscode-edition",
+                "ms-python.black-formatter"
             ]
         }
     },
-    "forwardPorts": []
 }
