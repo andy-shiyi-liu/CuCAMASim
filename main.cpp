@@ -26,6 +26,11 @@ double CAMInference(const std::filesystem::path configPath,
             << " Cols, " << camArray->getDim().nRows << " Rows" << std::endl;
 
   Dataset *dataset = loadDataset(datasetName);
+  std::cout << "Dataset Size: " << dataset->testInputs->getNFeatures()
+            << " features, "
+            << dataset->testInputs->getNVectors() +
+                   dataset->trainInputs->getNVectors()
+            << " samples." << std::endl;
 
   std::cout << "DT Accuracy (original): "
             << dt.score(dataset->testInputs, dataset->testLabels) << std::endl;
