@@ -2,8 +2,11 @@
 #include <chrono>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
+#include <vector>
 
 #include "CuCAMASim.h"
 #include "dt2cam.h"
@@ -42,8 +45,7 @@ double CAMInference(const std::filesystem::path configPath,
     delete dataset;
   }
 
-  std::cout << "\033[1;32m"
-            << "CAMInference() finished without error"
+  std::cout << "\033[1;32m" << "CAMInference() finished without error"
             << "\033[0m" << std::endl;
   return CAMAccuracy;
 }
@@ -81,6 +83,127 @@ double softwareInference(const std::filesystem::path configPath,
   return accuracy;
 }
 
+void errorDistribution(const std::filesystem::path configPath,
+                       const std::filesystem::path treeTextPath,
+                       const std::filesystem::path outputPath,
+                       const std::string datasetName,
+                       const uint32_t sampleTimes) {
+  std::cout << "Doing statistic for error distribution" << std::endl;
+
+  std::cout << "Using tree text: " << treeTextPath << std::endl;
+
+  struct errDistrResult {
+    double softwareIdealAccuracy = 0;
+    double camAccuracy = 0;
+    uint64_t softwareWrong = 0;
+    uint64_t oneMatchCorrect = 0;
+    uint64_t oneMatchWrong = 0;
+    uint64_t multiMatchCorrect = 0;
+    uint64_t multiMatchWrong = 0;
+    uint64_t noMatch = 0;
+  } result;
+
+  const Dataset *dataset = loadDataset(datasetName);
+
+  DecisionTree dt4idealSwInf(treeTextPath);
+  dt4idealSwInf.parseTreeText();
+  std::vector<uint32_t> swPred;
+  dt4idealSwInf.pred(dataset->testInputs, swPred);
+  result.softwareIdealAccuracy =
+      dataset->testLabels->calculateInferenceAccuracy(swPred);
+
+  delete dataset;
+
+  for (uint32_t nIter = 0; nIter < sampleTimes; nIter++) {
+    const Dataset *dataset = loadDataset(datasetName);
+    DecisionTree dt(treeTextPath);
+    ACAMArray *camArray = dt.toACAM();
+
+    CamConfig camConfig(configPath);
+    CuCAMASim camasim(&camConfig);
+
+    camasim.write(camArray);
+    camasim.query(dataset->testInputs, camasim.getSimResult());
+
+    const std::vector<std::vector<uint32_t>> camMatchedIdx =
+        camasim.getSimResult()->getMatchedIdx();
+
+    assert(swPred.size() == camMatchedIdx.size() && "Pred length mismatch!");
+
+    for (uint32_t i = 0; i < camMatchedIdx.size(); i++) {
+      const LabelData *testLabels = dataset->testLabels;
+      if (swPred[i] != testLabels->at(i)) {
+        result.softwareWrong += 1;
+      } else {
+        if (camMatchedIdx[i].size() == 0) {
+          result.noMatch += 1;
+        } else if (camMatchedIdx[i].size() == 1) {
+          if ((*camArray->getRow2classID())[camMatchedIdx[i][0]] ==
+              testLabels->at(i)) {
+            result.oneMatchCorrect += 1;
+          } else {
+            result.oneMatchWrong += 1;
+          }
+        } else {
+          std::set<uint32_t> uniquePred(camMatchedIdx[i].begin(),
+                                        camMatchedIdx[i].end());
+          if (uniquePred.size() == 1 &&
+              (*camArray->getRow2classID())[*uniquePred.begin()] ==
+                  testLabels->at(i)) {
+            result.multiMatchCorrect += 1;
+          } else {
+            result.multiMatchWrong += 1;
+          }
+        }
+      }
+    }
+
+    double CAMAccuracy = camasim.getSimResult()->calculateInferenceAccuracy(
+        dataset->testLabels, camArray->getRow2classID());
+    result.camAccuracy += CAMAccuracy;
+
+    delete camArray;
+    if (dataset != nullptr) {
+      delete dataset;
+    }
+  }
+
+  dataset = loadDataset(datasetName);
+  uint64_t cnt = result.softwareWrong + result.oneMatchCorrect +
+                 result.oneMatchWrong + result.multiMatchCorrect +
+                 result.multiMatchWrong + result.noMatch;
+  assert(cnt == sampleTimes * dataset->testLabels->getNVectors());
+
+  if (dataset != nullptr) {
+    delete dataset;
+  }
+
+  // write results
+  std::ofstream outputFile(outputPath);
+
+  if (!outputFile.is_open()) {
+    throw std::runtime_error("cannot open output file");
+  }
+
+  outputFile << "," << "softwareIdealAccuracy," << "camAccuracy,"
+             << "softwareWrong," << "oneMatchCorrect," << "oneMatchWrong,"
+             << "multiMatchCorrect," << "multiMatchWrong," << "noMatch"
+             << std::endl;
+  outputFile << "value," << result.softwareIdealAccuracy << ","
+             << (double)result.camAccuracy / sampleTimes << ","
+             << (double)result.softwareWrong / (double)cnt << ","
+             << (double)result.oneMatchCorrect / (double)cnt << ","
+             << (double)result.oneMatchWrong / (double)cnt << ","
+             << (double)result.multiMatchCorrect / (double)cnt << ","
+             << (double)result.multiMatchWrong / (double)cnt << ","
+             << (double)result.noMatch / (double)cnt;
+
+  outputFile.close();
+
+  std::cout << "\033[1;32m" << "errorDistribution() finished without error"
+            << "\033[0m" << std::endl;
+}
+
 int main(int argc, char *argv[]) {
   CLI::App app{"Decision Tree inference on ACAM"};
 
@@ -92,6 +215,7 @@ int main(int argc, char *argv[]) {
       "The task which this program is going to perform. Available options: "
       " - CAM_inference"
       " - software_inference"
+      " - errDistr"
       "The default task is " +
           task);
 
@@ -102,13 +226,19 @@ int main(int argc, char *argv[]) {
       "software inference, depending on the --task flag.");
 
   std::string datasetName = "BTSC_adapted_rand";
-  app.add_option("--dataset", datasetName,
-                 "Name of dataset to be used.");
+  app.add_option("--dataset", datasetName, "Name of dataset to be used.");
 
   std::string treeTextPath = "default";
   app.add_option("--use_trained_tree", treeTextPath,
                  "Path to the tree text file. If not provided, the default "
                  "path for the dataset will be used.");
+
+  std::string outputPath = "invalid_path";
+  app.add_option("--output", outputPath, "Output path for simulation results");
+
+  std::uint32_t sampleTimes = 0;
+  app.add_option("--sample_time", sampleTimes,
+                 "Do Monte Carlo Method by averaging the result of N samples.");
 
   // Parsing command-line arguments
   CLI11_PARSE(app, argc, argv);
@@ -123,6 +253,19 @@ int main(int argc, char *argv[]) {
     CAMInference(configPath, treeTextPath, datasetName);
   } else if (task == "software_inference") {
     softwareInference(configPath, treeTextPath, datasetName);
+  } else if (task == "errDistr") {
+    if (outputPath == "invalid_path") {
+      throw std::runtime_error(
+          "Output path is needed for task 'errDistr'. Please specify a result "
+          "output path by '--output' argument.");
+    }
+    if (sampleTimes == 0) {
+      throw std::runtime_error(
+          "Sample time is needed for task 'errDistr' and cannot be 0. Please "
+          "specify by '--sample_time' argument.");
+    }
+    errorDistribution(configPath, treeTextPath, outputPath, datasetName,
+                      sampleTimes);
   } else {
     std::cerr << "Invalid task: " << task << std::endl;
     return 1;

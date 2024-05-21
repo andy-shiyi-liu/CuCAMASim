@@ -176,6 +176,7 @@ void DecisionTree::printSubTree(TreeNode* treeNode, std::string spacing) {
 }
 
 void DecisionTree::pred(InputData* input, std::vector<uint32_t>& predLabel) {
+  assert(rootNode != nullptr && "Tree not initialized!");
   predLabel.resize(input->getNVectors());
   for (uint32_t rowIdx = 0; rowIdx < input->getNVectors(); rowIdx++) {
     predRow(input, rowIdx, rootNode, predLabel);
