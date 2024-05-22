@@ -284,3 +284,19 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
   };
   return treeTextPath[datasetName];
 }
+
+uint32_t DecisionTree::getTreeDepth() const {
+  uint32_t maxDepth = 1;
+  for (auto leafNode : leafNodes) {
+    uint32_t depth = 1;
+    TreeNode* currNode = leafNode;
+    while (currNode->getParent() != nullptr) {
+      depth++;
+      currNode = currNode->getParent();
+    }
+    if (depth > maxDepth) {
+      maxDepth = depth;
+    }
+  }
+  return maxDepth;
+}

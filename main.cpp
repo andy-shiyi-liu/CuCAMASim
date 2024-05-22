@@ -209,11 +209,40 @@ void errorDistribution(const std::filesystem::path configPath,
             << "\033[0m" << std::endl;
 }
 
+void printInfo(const std::filesystem::path treeTextPath,
+               const std::string datasetName) {
+  std::cout << "Doing CAM inference" << std::endl;
+  std::cout << "Using tree text: " << treeTextPath << std::endl;
+
+  DecisionTree dt(treeTextPath);
+  ACAMArray *camArray = dt.toACAM();
+
+  std::cout << "DT depth: " << dt.getTreeDepth() << std::endl;
+
+  std::cout << "CAM array size after DT mapping: " << camArray->getDim().nRows
+            << " Rows, " << camArray->getDim().nCols << " Cols" << std::endl;
+
+  Dataset *dataset = loadDataset(datasetName);
+
+  std::vector<uint32_t> uniqueLabels;
+  for (uint32_t i = 0; i < dataset->testLabels->getNVectors(); i++) {
+    if (std::find(uniqueLabels.begin(), uniqueLabels.end(),
+                  dataset->testLabels->at(i)) == uniqueLabels.end()) {
+      uniqueLabels.push_back(dataset->testLabels->at(i));
+    }
+  }
+
+  std::cout << "Dataset Size: " << dataset->testInputs->getNFeatures()
+            << " features, "
+            << dataset->testInputs->getNVectors() +
+                   dataset->trainInputs->getNVectors()
+            << " samples, " << uniqueLabels.size() << " classes" << std::endl;
+}
+
 int main(int argc, char *argv[]) {
   CLI::App app{"Decision Tree inference on ACAM"};
 
   // Adding options
-
   std::string task = "CAM_inference";
   app.add_option(
       "--task", task,
@@ -271,6 +300,8 @@ int main(int argc, char *argv[]) {
     }
     errorDistribution(configPath, treeTextPath, outputPath, datasetName,
                       sampleTimes);
+  } else if (task == "print_info") {
+    printInfo(treeTextPath, datasetName);
   } else {
     std::cerr << "Invalid task: " << task << std::endl;
     return 1;

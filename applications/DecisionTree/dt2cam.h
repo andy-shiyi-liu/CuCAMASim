@@ -22,8 +22,8 @@ class TreeNode {
   TreeNodeType type = INVALID_NODE;
 
  public:
-  inline virtual const TreeNode *getParent() const  { return parent; }
-  inline virtual TreeNodeType getType() const { return type; };
+  inline virtual TreeNode *getParent() const  { return parent; }
+  inline virtual TreeNodeType getType() const { return type; }
   virtual ~TreeNode() {}
 };
 
@@ -40,7 +40,7 @@ class LeafNode : public TreeNode {
       : classID(classID), parent(parent) {}
   inline TreeNodeType getType() const override { return type; };
   inline uint32_t getClassID() const { return classID; };
-  inline const TreeNode *getParent() const override { return parent; };
+  inline TreeNode *getParent() const override { return parent; };
   virtual ~LeafNode() {}
 };
 
@@ -69,7 +69,7 @@ class StemNode : public TreeNode {
   inline double getThreshold() const { return threshold; };
   inline TreeNode *getLeNode() const { return leNode; };
   inline TreeNode *getGtNode() const { return gtNode; };
-  inline const TreeNode *getParent() const override { return parent; };
+  inline TreeNode *getParent() const override { return parent; };
   inline TreeNodeType getType() const override { return type; };
 
   inline void setThreshold(double newThreshold) { this->threshold = newThreshold; }
@@ -131,6 +131,7 @@ class DecisionTree {
   void addVariation(const YAML::Node &config);
   ACAMArray *toACAM();
   void parseTreeText();
+  uint32_t getTreeDepth() const ;
 };
 
 std::filesystem::path getTreeTextPath(std::string datasetName) ;
