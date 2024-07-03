@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    htop tmux cmake make git gcc g++ gdb libhdf5-dev \
+    cmake make git gcc g++ gdb libhdf5-dev \
     python-is-python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +15,7 @@ RUN cd ~ && git clone git://git.code.sf.net/p/matio/matio && \
     cd matio && \
     cmake . && \
     cmake --build . && \
-    cmake --install .
+    cmake --install . 
 
 # Install Python packages
 RUN pip install --no-cache-dir numpy scipy scikit-learn pyyaml \

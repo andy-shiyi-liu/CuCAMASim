@@ -236,7 +236,11 @@ void printInfo(const std::filesystem::path treeTextPath,
             << " features, "
             << dataset->testInputs->getNVectors() +
                    dataset->trainInputs->getNVectors()
-            << " samples, " << uniqueLabels.size() << " classes" << std::endl;
+            << " samples, " << uniqueLabels.size() << " classes." << std::endl
+            << " - " << dataset->trainInputs->getNVectors() << " train samples,"
+            << std::endl
+            << " - " << dataset->testInputs->getNVectors() << " test samples."
+            << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -272,7 +276,7 @@ int main(int argc, char *argv[]) {
 
   std::uint32_t sampleTimes = 0;
   app.add_option("--sample_time", sampleTimes,
-                 "Do Monte Carlo Method by averaging the result of N samples.");
+                 "Do Monte Carlo Method by averaging the result of N samples. This argument is only valid for ``");
 
   // Parsing command-line arguments
   CLI11_PARSE(app, argc, argv);
