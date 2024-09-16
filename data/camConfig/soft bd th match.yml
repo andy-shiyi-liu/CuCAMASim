@@ -38,8 +38,6 @@ query:
   searchScheme: exact   # merge scheme
 mapping:
   N2VConvert:
-    # lineConvertRangeMargin: 0.05
-    # queryClipRangeMargin: 0.03
     maxConvertConductance: 140
     minConvertConductance: 10
     lineConvertRangeMin: -0.05

@@ -68,7 +68,7 @@ You can choose a different decision tree than the default one for simulation. Th
 When simulating a decision tree inference task, two elements are required: dataset and decision tree text. Therefore, adding new dataset is a matter of preparing these two elements and correponding configurations for CuCAMASim simulation.
 
 #### Preparing Dataset
-The dataset should be in a format that CuCAMASim can read. This format is a `.mat` file which was originally used by MATLAB to store matrix data. We use [matio](https://github.com/tbeu/matio) library for reading the `.mat` file. The `.mat` file should contain 4 elements, namely `trainInputs`, `testInputs`, `trainLabels`, and `testLabels`.
+The dataset should be in a format that CuCAMASim can read. This format is a `.mat` file which was originally used by MATLAB to store matrix data. We use [matio](https://github.com/tbeu/matio) library for reading the `.mat` file. The `.mat` file should contain 4 matrices, namely `trainInputs`, `testInputs`, `trainLabels`, and `testLabels`.
 
 For the implemented datasets, we use a seperate python script to generate the `.mat` file. The following content uses the preparation of "Breast Cancer Wisconsin (Diagnostic)" dataset as an example.
 

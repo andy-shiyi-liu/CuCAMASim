@@ -1,28 +1,29 @@
 arch:
-  MatsPerBank: 4
   ArraysPerMat: 4
+  MatsPerBank: 4
+  # Merge: exact
   SubarraysPerArray: 4
 array:
-  bit: 3
-  cell: ACAM
+  bit: &bit 3
+  cell: &cell ACAM
   col: 256
   row: 256
   sensing: exact
   sensingLimit: 0
   useEVACAMCost: false
 cell:
-  design: 6T2M
-  device: RRAM
-  maxConductance: 150
-  minConductance: 0
+  design: &cellDesign 6T2M
   representation: voltage
-  type: ACAM
+  type: *cell     # TCAM, MCAM
+  device: &device RRAM
+  minConductance: &cellMinConduct 0
+  maxConductance: &cellMaxConduct 150
   writeNoise:
-    cellDesign: 6T2M
-    device: RRAM
     hasWriteNoise: true
-    maxConductance: 150
-    minConductance: 0
+    cellDesign: *cellDesign
+    minConductance: *cellMinConduct
+    maxConductance: *cellMaxConduct
+    device: *device
     noiseType:
       variation:
         stdDev: 0
@@ -31,19 +32,17 @@ cell:
 query:
   FuncSim: true
   PerfEval: false
-  bit: 3
+  bit: *bit
   distance: range
   distanceParameter: 1000
   parameter: 30
-  searchScheme: exact
+  searchScheme: exact   # merge scheme
 mapping:
   N2VConvert:
-    maxConvertConductance: 150
-    minConvertConductance: 0
-    # lineConvertRangeMin: -0.1
-    # lineConvertRangeMax: 1.1
-    # queryClipRangeMin: 0.2
-    # queryClipRangeMax: 0.8
+    maxConvertConductance: 140
+    minConvertConductance: 10
+    lineConvertRangeMargin: 0.05
+    queryClipRangeMargin: 0.03
   expandConductanceAll:
     strategy: "fixed size"
     expandSize: 0
