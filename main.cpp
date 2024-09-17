@@ -12,6 +12,7 @@
 #include "dt2cam.h"
 #include "matio.h"
 #include "util/CLI11.hpp"
+#include "util/consts.h"
 
 double CAMInference(const std::filesystem::path configPath,
                     const std::filesystem::path treeTextPath,
@@ -244,6 +245,7 @@ void printInfo(const std::filesystem::path treeTextPath,
 }
 
 int main(int argc, char *argv[]) {
+  std::cout << "CuCAMASim Version " << CUCAMASIM_VERSION << std::endl;
   CLI::App app{"Decision Tree inference on ACAM"};
 
   // Adding options

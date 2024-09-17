@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <fstream>
+#include <string>
 
 #include "function/cuda/rram.cuh"
 #include "function/cuda/util.cuh"
@@ -308,6 +309,27 @@ void addRRAMNewMapping(Mapping *mapping, ACAMArray *array) {
           mapping->getCellConfig()->minConductance,
           mapping->getCellConfig()->maxConductance);
       std::cout << "added expandConductanceAll mapping strategy" << std::endl;
+    } else if (it.first == "expandDontCareOnly") {
+      std::map<std::string, std::string> params = it.second;
+      assert((params["strategy"] == "fixed size") &&
+             "Only support fixed size strategy now");
+      assert(mapping->getCellConfig()->device == "RRAM");
+      double expandSize = std::stod(params["expandSize"]);
+      float minConvertConductance = std::stof(mapping->getMappingConfig()
+                                                  ->strategies.at("N2VConvert")
+                                                  .at("minConvertConductance"));
+      float maxConvertConductance = std::stof(mapping->getMappingConfig()
+                                                  ->strategies.at("N2VConvert")
+                                                  .at("maxConvertConductance"));
+      expandDontCareOnly<<<grid, block, 0, stream>>>(
+          camRawData_d, array->getDim(), expandSize, minConvertConductance,
+          maxConvertConductance, mapping->getCellConfig()->minConductance,
+          mapping->getCellConfig()->maxConductance);
+      std::cout << "added expandDontCareOnly mapping strategy" << std::endl;
+    } else if (it.first == "N2VConvert") {
+      // do nothing
+    } else {
+      throw std::runtime_error("Invalid mapping strategy: " + it.first);
     }
   }
 
