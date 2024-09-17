@@ -282,6 +282,13 @@ std::filesystem::path getTreeTextPath(std::string datasetName) {
        "/workspaces/CuCAMASim/data/treeText/gesture_phase_segmentation/"
        "gesture_phase_segmentation_normalized.txt"},
   };
+
+  // if key does not exist, throw an error
+  if (treeTextPath.find(datasetName) == treeTextPath.end()) {
+    throw std::runtime_error("No tree text path found for dataset: " +
+                             datasetName);
+  }
+
   return treeTextPath[datasetName];
 }
 

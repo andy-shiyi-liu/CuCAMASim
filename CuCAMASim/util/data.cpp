@@ -385,6 +385,12 @@ Dataset* loadDataset(std::string datasetName) {
        "/workspaces/CuCAMASim/data/datasets/gesture_phase_segmentation/"
        "gesture_phase_segmentation_normalized.mat"},
   };
+
+  // if key not found, throw an error
+  if (datasetPath.find(datasetName) == datasetPath.end()) {
+    throw std::runtime_error("No dataset path found for dataset: " + datasetName);
+  }
+
   Dataset* dataset = new Dataset(datasetPath[datasetName]);
   std::cout << "Dataset loaded!" << std::endl;
   return dataset;
