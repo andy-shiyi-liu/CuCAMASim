@@ -15,7 +15,7 @@ __device__ inline double solveConductanceFromVbd(double Vbd,
   double x = RRAM_STARTPOINT;
   double f = RRAMConduct2Vbd(x, type) - Vbd;
   double df = d_RRAMConduct2Vbd(x, type);
-  for (uint64_t i = 0; fabs(f) > RRAM_TOLERANCE && i < RRAM_MAX_ITER; i++) {
+  for (uint64_t i = 0; fabs(f) / df >= 0.1 * RRAM_TOLERANCE && i < RRAM_MAX_ITER; i++) {
     x = x - f / df;
     f = RRAMConduct2Vbd(x, type) - Vbd;
     df = d_RRAMConduct2Vbd(x, type);

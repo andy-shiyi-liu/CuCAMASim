@@ -3,7 +3,7 @@
 #define CONSTS_H
 
 // CuCAMASim version number
-#define CUCAMASIM_VERSION "1.9.2"
+#define CUCAMASIM_VERSION "1.9.3"
 
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
@@ -15,8 +15,8 @@
 #define RRAM_TOLERANCE 1e-8
 //  - add new mapping on RRAM Conductance
 //    - thread and block size used
-#define RRAM_NEWMAPPING_THREAD_X 16     // suggested: 16
-#define RRAM_NEWMAPPING_THREAD_Y 32     // suggested: 32
+#define RRAM_NEWMAPPING_THREAD_X 1     // suggested: 16
+#define RRAM_NEWMAPPING_THREAD_Y 1     // suggested: 32
 //  - add RRAM noise
 //    - thread and block size when adding RRAM noise
 #define RRAM_NOISE_THREAD_X 16          // suggested: 16
