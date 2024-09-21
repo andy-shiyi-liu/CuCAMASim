@@ -12,6 +12,11 @@ __global__ void rangeQueryPairwise(const double* rawCamData,
                                    double* distanceArray,
                                    const CAMArrayDim camDim,
                                    const InputDataDim queryDim);
+__global__ void softRangePairwise(const double* rawCamData,
+                                  const double* rawQueryData,
+                                  double* distanceArray, const double softness,
+                                  const CAMArrayDim camDim,
+                                  const InputDataDim queryDim);
 }
 
 #endif

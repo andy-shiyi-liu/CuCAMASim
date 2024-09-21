@@ -195,9 +195,9 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
 
   // cuda grid and block size
   cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, GPU_DEVICE_ID); // assuming device 0, adjust as needed
-  if (DIST_FUNC_THREAD_X * DIST_FUNC_THREAD_Y >
-      deviceProp.maxThreadsPerBlock) {
+  cudaGetDeviceProperties(
+      &deviceProp, GPU_DEVICE_ID);  // assuming device 0, adjust as needed
+  if (DIST_FUNC_THREAD_X * DIST_FUNC_THREAD_Y > deviceProp.maxThreadsPerBlock) {
     throw std::runtime_error(
         "The number of threads per block exceeds the limit. Conside decrease "
         "DIST_FUNC_THREAD_X and/or DIST_FUNC_THREAD_Y. Current "
@@ -237,8 +237,14 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
     rangeQueryPairwise<<<grid4Dist, block4Dist, 0, stream>>>(
         *rawCamData_d, *rawQueryData_d, *distanceArray_d, camDim, queryDim);
   } else if (camSearch->getDistType() == "softRange") {
-    throw std::runtime_error(
-        "NotImplementedError: Soft range distance is not implemented yet");
+    if (camDim.nBoundaries != 2) {
+      throw std::runtime_error(
+          "Soft range distance requires ACAM, with 2 boundaries per cell!");
+    }
+    double softness = camSearch->getQueryConfig()->distanceParameter;
+    softRangePairwise<<<grid4Dist, block4Dist, 0, stream>>>(
+        *rawCamData_d, *rawQueryData_d, *distanceArray_d, softness, camDim,
+        queryDim);
   } else {
     throw std::runtime_error("NotImplementedError: Unknown distance type");
   }

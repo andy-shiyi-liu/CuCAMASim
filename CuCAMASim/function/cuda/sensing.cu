@@ -45,3 +45,4 @@ __global__ void getArrayExactResults(
     }
   }
 }
+

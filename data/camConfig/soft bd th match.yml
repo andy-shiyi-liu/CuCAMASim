@@ -26,15 +26,16 @@ cell:
     device: *device
     noiseType:
       variation:
-        type: gaussian    # gaussian, g-dependent
-        stdDev: 3        # uS, the standard deviation of the gaussian distribution
+        type: bounded_gaussian    # gaussian, g-dependent
+        stdDev: 4.5        # uS, the standard deviation of the gaussian distribution
+        bound: 7.5         # uS, the bound of the distribution
 query:
   FuncSim: true
   PerfEval: false
   bit: *bit
   distance: softRange
-  distanceParameter: 100
-  parameter: 0.5
+  distanceParameter: 100    # softness for soft range
+  parameter: 0.5            # threshold for threshold match
   searchScheme: exact   # merge scheme
 mapping:
   N2VConvert:

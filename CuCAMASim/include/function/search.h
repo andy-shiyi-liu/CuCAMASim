@@ -27,8 +27,7 @@ class CAMSearch {
         searchParameter(queryConfig->parameter),
         sensing(arrayConfig->sensing),
         sensingLimit(arrayConfig->sensingLimit),
-        distanceType(queryConfig->distance) {
-  }
+        distanceType(queryConfig->distance) {}
 
   void defineSearchArea(uint32_t rowCams, uint32_t colCams);
   void search(const CAMDataBase *camData, const QueryData *queryData,
@@ -41,6 +40,7 @@ class CAMSearch {
   inline double getSearchParameter() const { return searchParameter; };
   inline std::string getSensing() const { return sensing; };
   inline double getSensingLimit() const { return sensingLimit; };
+  inline const QueryConfig *getQueryConfig() const { return queryConfig; };
 
   ~CAMSearch() {}
 };

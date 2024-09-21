@@ -162,6 +162,12 @@ void addRRAMNoise(WriteNoise *writeNoise, ACAMArray *array) {
       std::string noiseType = params["type"];
 
       if (noiseType == "bounded_gaussian") {
+        // check keys and throw an error if any key is missing
+        if (params.find("stdDev") == params.end() ||
+            params.find("bound") == params.end()) {
+          throw std::runtime_error("Missing keys in noise type: " + noiseType);
+        }
+
         double stdDev = std::stod(params["stdDev"]);
         double bound = std::stod(params["bound"]);
         addBoundedGaussianVariation<<<grid, block, 0, stream>>>(
