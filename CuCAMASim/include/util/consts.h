@@ -3,7 +3,7 @@
 #define CONSTS_H
 
 // CuCAMASim version number
-#define CUCAMASIM_VERSION "1.9.3"
+#define CUCAMASIM_VERSION "1.10.1"
 
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
