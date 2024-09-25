@@ -11,6 +11,11 @@ __global__ void getArrayExactResults(
     const CAMArrayDim camDim, const InputDataDim queryDim,
     const uint32_t rowCamIdx, const uint32_t colCamIdx, const uint32_t colCam,
     uint32_t *errorCode);
+__global__ void getArrayThresholdResults(
+    const double *distanceArray_d, uint32_t *matchIdx_d, double *matchIdxDist_d,
+    const CAMArrayDim camDim, const InputDataDim queryDim,
+    const uint32_t rowCamIdx, const uint32_t colCamIdx, const uint32_t colCam,
+    const double threshold, uint32_t *errorCode);
 }
 
 #endif

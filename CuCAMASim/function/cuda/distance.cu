@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include <cassert>
-#include <limits>
 #include <cmath>
+#include <limits>
 
 #include "function/cuda/distance.cuh"
 #include "function/cuda/util.cuh"
@@ -76,12 +76,21 @@ __global__ void rangeQueryPairwise(const double* rawCamData,
   distanceArray[idx] = rowDist;
 }
 
+__device__ inline double lowerSoftBd(double queryValue, double camLowerBd,
+                                     double softness) {
+  return 1 / (1 + exp(softness * (queryValue - camLowerBd) + 3));
+}
+
+__device__ inline double upperSoftBd(double queryValue, double camUpperBd,
+                                     double softness) {
+  return 1 / (1 + exp(-softness * (queryValue - camUpperBd) + 3));
+}
+
 __global__ void softRangePairwise(const double* rawCamData,
-                                   const double* rawQueryData,
-                                   double* distanceArray,
-                                   const double softness,
-                                   const CAMArrayDim camDim,
-                                   const InputDataDim queryDim) {
+                                  const double* rawQueryData,
+                                  double* distanceArray, const double softness,
+                                  const CAMArrayDim camDim,
+                                  const InputDataDim queryDim) {
   // printf("in Range Query Pairwise\n");
 
   assert(camDim.nCols == queryDim.nFeatures);
@@ -107,19 +116,29 @@ __global__ void softRangePairwise(const double* rawCamData,
 
   // calculate the distance between the vector[vectorIdx] and cam row[camRowIdx]
   double rowDist = 0.0;
+  bool hasValidCell = false;  // check whether the row contains valid cells
   for (uint32_t colIdx = 0; colIdx < camDim.nCols; colIdx++) {
     double queryValue = rawQueryData[getQueryIdx(vectorIdx, colIdx, queryDim)];
     // printf("%lf",queryValue);
     double camLowerBd = rawCamData[getCamIdx(camRowIdx, colIdx, 0, camDim)];
     double camUpperBd = rawCamData[getCamIdx(camRowIdx, colIdx, 1, camDim)];
-    double dist = 0.0;
-    // dist caused by the lower bound
-    dist += 1 / (1 + exp(softness * (queryValue - camLowerBd) + 3));
-    // dist caused by the upper bound
-    dist += 1 / (1 + exp(softness * (queryValue - camUpperBd) + 3));
+    if (camLowerBd != 0 || camUpperBd != 0) {
+      hasValidCell = true;
+      // dist caused by the lower bound
+      rowDist += lowerSoftBd(queryValue, camLowerBd, softness);
+      // dist caused by the upper bound
+      rowDist += upperSoftBd(queryValue, camUpperBd, softness);
+      // printf(
+      //     "queryValue: %lf, camLowerBd: %lf, camUpperBd: %lf, rowDist: %lf\n",
+      //     queryValue, camLowerBd, camUpperBd, rowDist);
+    }
+  }
+  if (!hasValidCell) {
+    rowDist = 1e50;  // set to a large number for invalid rows
+    // printf("Invalid row detected at camRowIdx: %llu\n", camRowIdx);
   }
 
-  // for debug
+  // // for debug
   // if (rowDist != 20 && camRowIdx > 29) {
   //   for (uint32_t colIdx = 0; colIdx < camDim.nCols; colIdx++) {
   //     double queryValue =
@@ -139,6 +158,7 @@ __global__ void softRangePairwise(const double* rawCamData,
   //       "*******************\n",
   //       vectorIdx, camRowIdx, rowDist, ix, iy, idx);
   // }
+
   // write the distance to the distance array
   distanceArray[idx] = rowDist;
 }

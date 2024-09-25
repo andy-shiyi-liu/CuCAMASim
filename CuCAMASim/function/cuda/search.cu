@@ -175,6 +175,9 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
       camData->at(rowCamIdx, colCamIdx)->getData(FOR_CUDA_MEM_CPY);
   uint64_t nBytes =
       camDim.nRows * camDim.nCols * camDim.nBoundaries * sizeof(double);
+
+  camData->at(rowCamIdx, colCamIdx)->toCSV("/workspaces/CuCAMASim/camArray.csv");
+  
   assert(*rawCamData_d == nullptr);
   CHECK(cudaMalloc((void **)rawCamData_d, nBytes));
   CHECK(
@@ -191,7 +194,8 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   nBytes = nVectors * rowSize * sizeof(double);
   assert(*distanceArray_d == nullptr);
   CHECK(cudaMalloc((void **)distanceArray_d, nBytes));
-  CHECK(cudaMemset(*distanceArray_d, 255, nBytes));
+  CHECK(
+      cudaMemset(*distanceArray_d, 255, nBytes));  // setting all values to -NaN
 
   // cuda grid and block size
   cudaDeviceProp deviceProp;
@@ -213,6 +217,27 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
                  (long long int)(nVectors - 1) / block4Dist.y + 1);
 
   // create cuda stream for sequential execution of kernels
+
+  // for debug
+  // export distanceArray_h to csv file
+  double *distanceArray_h = new double[nVectors * rowSize];
+
+  CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
+                   cudaMemcpyDeviceToHost));
+  std::ofstream file0("/workspaces/CuCAMASim/distances_init.csv");
+  file0 << ",";
+  for (uint32_t i = 0; i < rowSize; i++) {
+    file0 << i << ",";
+  }
+  file0 << std::endl;
+  for (uint32_t i = 0; i < nVectors; i++) {
+    file0 << i << ",";
+    for (uint32_t j = 0; j < rowSize; j++) {
+      file0 << distanceArray_h[i * rowSize + j] << ",";
+    }
+    file0 << std::endl;
+  }
+  file0.close();
 
   // 1. Calculate the distance matrix in the array
   if (camSearch->getDistType() == "euclidean") {
@@ -241,34 +266,35 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
       throw std::runtime_error(
           "Soft range distance requires ACAM, with 2 boundaries per cell!");
     }
-    double softness = camSearch->getQueryConfig()->distanceParameter;
+    const double softness = camSearch->getQueryConfig()->distanceParameter;
+    printf("calling softRangePairwise\n");
     softRangePairwise<<<grid4Dist, block4Dist, 0, stream>>>(
-        *rawCamData_d, *rawQueryData_d, *distanceArray_d, softness, camDim,
-        queryDim);
+      *rawCamData_d, *rawQueryData_d, *distanceArray_d, softness, camDim,
+      queryDim);
   } else {
     throw std::runtime_error("NotImplementedError: Unknown distance type");
   }
 
-  // // for debug
+  // for debug
   // double *distanceArray_h = new double[nVectors * rowSize];
-  // CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
-  //                  cudaMemcpyDeviceToHost));
+  CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
+                   cudaMemcpyDeviceToHost));
 
-  // // export distanceArray_h to csv file
-  // std::ofstream file("/workspaces/CuCAMASim/distances.csv");
-  // file << ",";
-  // for (uint32_t i = 0; i < rowSize; i++) {
-  //   file << i << ",";
-  // }
-  // file << std::endl;
-  // for (uint32_t i = 0; i < nVectors; i++) {
-  //   file << i << ",";
-  //   for (uint32_t j = 0; j < rowSize; j++) {
-  //     file << distanceArray_h[i * rowSize + j] << ",";
-  //   }
-  //   file << std::endl;
-  // }
-  // file.close();
+  // export distanceArray_h to csv file
+  std::ofstream file1("/workspaces/CuCAMASim/distances_after.csv");
+  file1 << ",";
+  for (uint32_t i = 0; i < rowSize; i++) {
+    file1 << i << ",";
+  }
+  file1 << std::endl;
+  for (uint32_t i = 0; i < nVectors; i++) {
+    file1 << i << ",";
+    for (uint32_t j = 0; j < rowSize; j++) {
+      file1 << distanceArray_h[i * rowSize + j] << ",";
+    }
+    file1 << std::endl;
+  }
+  file1.close();
 
   // 2. Find the output IDs of the array
   dim3 block4Sensing(SENSING_THREAD_X);
@@ -286,8 +312,10 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
     throw std::runtime_error(
         "NotImplementedError: Best sensing is not implemented yet");
   } else if (camSearch->getSensing() == "threshold") {
-    throw std::runtime_error(
-        "NotImplementedError: Threshold sensing is not implemented yet");
+    const double threshold = camSearch->getQueryConfig()->parameter;
+    getArrayThresholdResults<<<grid4Sensing, block4Sensing, 0, stream>>>(
+        *distanceArray_d, matchIdx_d, matchIdxDist_d, camDim, queryDim,
+        rowCamIdx, colCamIdx, camData->getColCams(), threshold, *errorCode_d);
   } else {
     throw std::runtime_error("NotImplementedError: Unknown sensing type");
   }
