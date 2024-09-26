@@ -129,6 +129,8 @@ void mergeIndices(const CAMSearch *camSearch, const uint32_t *matchIdx_d,
     throw std::runtime_error("NotImplementedError: Unknown merge scheme");
   }
 
+  CHECK_KERNEL;
+
   // // for debug
   // // export result_d to csv file
   // uint32_t *result_h = new uint32_t[nVectors * MAX_MATCHED_ROWS * 1];
@@ -275,6 +277,8 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
     throw std::runtime_error("NotImplementedError: Unknown distance type");
   }
 
+  CHECK_KERNEL;
+
   // for debug
   // double *distanceArray_h = new double[nVectors * rowSize];
   CHECK(cudaMemcpy(distanceArray_h, *distanceArray_d, nBytes,
@@ -319,6 +323,8 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   } else {
     throw std::runtime_error("NotImplementedError: Unknown sensing type");
   }
+
+  CHECK_KERNEL;
 
   // // for debug
 

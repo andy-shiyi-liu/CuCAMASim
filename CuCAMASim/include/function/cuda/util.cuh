@@ -19,6 +19,16 @@
     }                                                                  \
   }
 
+#define CHECK_KERNEL                                                   \
+  {                                                                    \
+    const cudaError_t error = cudaGetLastError();                      \
+    if (error != cudaSuccess) {                                        \
+      printf("\033[0;31mERROR: %s:%d,\033[0m", __FILE__, __LINE__);    \
+      printf("\033[0;31mcode:%d,reason:%s\n\033[0m", error, cudaGetErrorString(error)); \
+      exit(-1);                                                         \
+    }                                                                  \
+  }
+
 #define getIx uint64_t ix = threadIdx.x + blockIdx.x * blockDim.x
 #define getIy uint64_t iy = threadIdx.y + blockIdx.y * blockDim.y
 #define getIdx2D uint64_t idx = ix + iy * nx;
