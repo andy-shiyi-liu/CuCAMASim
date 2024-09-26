@@ -245,10 +245,12 @@ void printInfo(const std::filesystem::path treeTextPath,
 }
 
 int main(int argc, char *argv[]) {
-  std::cout << "CuCAMASim Version " << CUCAMASIM_VERSION << std::endl;
   CLI::App app{"Decision Tree inference on ACAM"};
 
   // Adding options
+  bool printVersion = false;
+  app.add_flag("--version", printVersion, "Print the version of the program");
+
   std::string task = "CAM_inference";
   app.add_option(
       "--task", task,
@@ -282,6 +284,11 @@ int main(int argc, char *argv[]) {
 
   // Parsing command-line arguments
   CLI11_PARSE(app, argc, argv);
+
+  std::cout << "CuCAMASim Version " << CUCAMASIM_VERSION << std::endl;
+  if (printVersion) {
+    return 0; // Exit the program after printing the version
+  }
 
   if (treeTextPath == "default") {
     treeTextPath = getTreeTextPath(datasetName);

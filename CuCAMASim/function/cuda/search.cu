@@ -178,8 +178,6 @@ void arraySearch(const CAMSearch *camSearch, const CAMDataBase *camData,
   uint64_t nBytes =
       camDim.nRows * camDim.nCols * camDim.nBoundaries * sizeof(double);
 
-  camData->at(rowCamIdx, colCamIdx)->toCSV("/workspaces/CuCAMASim/camArray.csv");
-  
   assert(*rawCamData_d == nullptr);
   CHECK(cudaMalloc((void **)rawCamData_d, nBytes));
   CHECK(
