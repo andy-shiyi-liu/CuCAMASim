@@ -3,7 +3,7 @@
 #define CONSTS_H
 
 // CuCAMASim version number
-#define CUCAMASIM_VERSION "1.10.1"
+#define CUCAMASIM_VERSION "1.10.2"
 
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
@@ -29,7 +29,7 @@
 // thread and block size used in arraySearch()
 //  - when calculating distance for every query vector, we launch a 2D grid of
 //    blocks, where each block is a 2D grid of threads
-#define DIST_FUNC_THREAD_X 32       // suggested: 16
+#define DIST_FUNC_THREAD_X 16       // suggested: 16
 #define DIST_FUNC_THREAD_Y 32       // suggested: 32
 //  - when sensing, we launch a 1D grid of blocks, where each block is a 1D grid of threads
 #define SENSING_THREAD_X 1024         // for debug, set to 1024 after debug
