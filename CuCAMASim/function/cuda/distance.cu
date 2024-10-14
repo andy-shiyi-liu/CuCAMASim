@@ -78,12 +78,12 @@ __global__ void rangeQueryPairwise(const double* rawCamData,
 
 __device__ inline double lowerSoftBd(double queryValue, double camLowerBd,
                                      double softness) {
-  return 1 / (1 + exp(softness * (queryValue - camLowerBd) + 3));
+  return 1 / (1 + exp(softness * (queryValue - camLowerBd) + 0));
 }
 
 __device__ inline double upperSoftBd(double queryValue, double camUpperBd,
                                      double softness) {
-  return 1 / (1 + exp(-softness * (queryValue - camUpperBd) + 3));
+  return 1 / (1 + exp(-softness * (queryValue - camUpperBd) + 0));
 }
 
 __global__ void softRangePairwise(const double* rawCamData,

@@ -3,7 +3,7 @@
 #define CONSTS_H
 
 // CuCAMASim version number
-#define CUCAMASIM_VERSION "1.10.3"
+#define CUCAMASIM_VERSION "1.10.4"
 
 // The GPU device id to be used for the simulation.
 #define GPU_DEVICE_ID 0
@@ -24,7 +24,7 @@
 
 // Maximum number of rows that can be matched for a single query.
 // This is necessary for allocating GPU memory.
-#define MAX_MATCHED_ROWS 1000
+#define MAX_MATCHED_ROWS 3326
 
 // thread and block size used in arraySearch()
 //  - when calculating distance for every query vector, we launch a 2D grid of
